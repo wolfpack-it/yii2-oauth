@@ -1,0 +1,29 @@
+{
+    "name": "wolfpack-it/yii2-oauth",
+    "description": "Yii2 OAuth2 server implementation of https://oauth2.thephpleague.com/",
+    "type": "library",
+    "require": {
+        "php": ">=7.1.0",
+
+        "league/oauth2-server": "^7.4.0",
+        "yiisoft/yii2": "~2.0.19"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Joey Claessen",
+            "email": "joey_claessen@hotmail.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "WolfpackIT\\oauth\\": ["src/"]
+        }
+    }
+}
