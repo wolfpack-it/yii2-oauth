@@ -2,16 +2,15 @@
 
 namespace WolfpackIT\oauth\models\activeRecord;
 
-use api\components\AccessTokenService;
 use api\components\ClientHttpBearerAuth;
-use common\behaviors\BlameableBehavior;
-use common\behaviors\TimestampBehavior;
-use League\OAuth2\Server\Entities\ClientEntityInterface;
-use oauth\models\ActiveRecord;
+use JCIT\behaviors\BlameableBehavior;
+use JCIT\behaviors\TimestampBehavior;
 use oauth\queries\activeQuery\ClientQuery;
 use oauth\traits\IdentifiableTrait;
 use SamIT\abac\connectors\yii2\ActiveRecordAuthorizableTrait;
-use SamIT\abac\interfaces\Authorizable;
+use WolfpackIT\oauth\components\AccessTokenService;
+use WolfpackIT\oauth\interfaces\ClientEntityInterface;
+use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 use yii\validators\RangeValidator;
 use yii\validators\RegularExpressionValidator;
@@ -21,7 +20,7 @@ use yii\web\IdentityInterface;
 
 /**
  * Class Client
- * @package oauth\models\activeRecord
+ * @package WolfpackIT\oauth\models\activeRecord
  *
  * @property int $id
  * @property string $identifier
@@ -36,13 +35,37 @@ use yii\web\IdentityInterface;
  */
 class Client
     extends ActiveRecord
-    implements ClientEntityInterface, Authorizable, IdentityInterface
+    implements ClientEntityInterface, IdentityInterface
 {
     use ActiveRecordAuthorizableTrait;
     use IdentifiableTrait;
 
+    const SCENARIO_CREATE = 'create';
+    const SCENARIO_DELETE = 'delete';
+    const SCENARIO_UPDATE = 'update';
+
     const STATUS_ACTIVE = 1;
     const STATUS_INACTIVE = 0;
+
+    /**
+     * @var string
+     */
+    protected $clientGrantGrantTypeClass = ClientGrantType::class;
+
+    /**
+     * @var string
+     */
+    protected $clientRedirectClass = ClientRedirect::class;
+
+    /**
+     * @var string
+     */
+    protected $clientScopeClass = ClientScope::class;
+
+    /**
+     * @var string
+     */
+    protected $scopeClass = Scope::class;
 
     /**
      * @return array
@@ -128,7 +151,7 @@ class Client
      */
     public static function find(): ClientQuery
     {
-        return new ClientQuery(get_called_class());
+        return \Yii::createObject(ClientQuery::class, [get_called_class()]);
     }
 
     /**
@@ -174,15 +197,7 @@ class Client
      */
     public function getClientGrantTypes()
     {
-        return $this->hasMany(ClientGrantType::class, ['client_id' => 'id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getClientScopes()
-    {
-        return $this->hasMany(ClientScope::class, ['client_id' => 'id']);
+        return $this->hasMany($this->clientGrantGrantTypeClass, ['client_id' => 'id']);
     }
 
     /**
@@ -190,9 +205,25 @@ class Client
      */
     public function getClientRedirects()
     {
-        return $this->hasMany(ClientRedirect::class, ['client_id' => 'id'])
+        return $this->hasMany($this->clientRedirectClass, ['client_id' => 'id'])
             ->inverseOf('client')
-        ;
+            ;
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getClientScopes()
+    {
+        return $this->hasMany($this->clientScopeClass, ['client_id' => 'id']);
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
     }
 
     /**
@@ -278,9 +309,6 @@ class Client
     public function secretHash($secret): string
     {
         return $secret;
-
-//        Secret is accessible after saving so no hashing for now
-//        return password_hash($secret, PASSWORD_DEFAULT);
     }
 
     /**
@@ -290,8 +318,6 @@ class Client
     public function secretVerify($hash): bool
     {
         return $hash === $this->secret;
-//        Secret is accessible after saving so no hashing for now
-//        return password_verify($this->secret, $hash);
     }
 
     /**

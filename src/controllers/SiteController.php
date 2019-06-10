@@ -1,23 +1,24 @@
 <?php
 
-namespace oauth\controllers;
+namespace WolfpackIT\oauth\controllers;
 
-use oauth\components\AuthorizationServer;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
 
 /**
  * Class SiteController
- * @package oauth\controllers
+ * @package WolfpackIT\oauth\controllers
  */
 class SiteController extends Controller
 {
-    public function actionIndex(
-    )
+    public function actionIndex()
     {
         return $this->render('index');
     }
 
+    /**
+     * @return array
+     */
     public function behaviors(): array
     {
         return ArrayHelper::merge(

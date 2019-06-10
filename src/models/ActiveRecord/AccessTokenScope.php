@@ -1,14 +1,14 @@
 <?php
 
-namespace WolfpackIT\\models\activeRecord;
+namespace WolfpackIT\oauth\models\activeRecord;
 
-use oauth\models\ActiveRecord;
-use oauth\queries\activeQuery\AccessTokenQuery;
+use WolfpackIT\oauth\queries\activeQuery\AccessTokenQuery;
 use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * Class AccessTokenScope
- * @package oauth\models\activeRecord
+ * @package WolfpackIT\oauth\models\activeRecord
  *
  * @property int $access_token_id
  * @property-read AccessToken $accessToken
@@ -18,18 +18,28 @@ use yii\db\ActiveQuery;
 class AccessTokenScope extends ActiveRecord
 {
     /**
+     * @var string
+     */
+    protected $accessTokenClass = AccessToken::class;
+
+    /**
+     * @var string
+     */
+    protected $scopeClass = Scope::class;
+
+    /**
      * @return AccessTokenQuery
      */
-    public function getAccessToken()
+    public function getAccessToken(): AccessTokenQuery
     {
-        return $this->hasOne(AccessToken::class, ['id' => 'access_token_id']);
+        return $this->hasOne($this->accessTokenClass, ['id' => 'access_token_id']);
     }
 
     /**
      * @return ActiveQuery
      */
-    public function getScope()
+    public function getScope(): ActiveQuery
     {
-        return $this->hasOne(Scope::class, ['id' => 'scope_id']);
+        return $this->hasOne($this->scopeClass, ['id' => 'scope_id']);
     }
 }

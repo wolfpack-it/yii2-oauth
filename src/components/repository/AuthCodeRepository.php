@@ -4,12 +4,13 @@ namespace WolfpackIT\oauth\components\repository;
 
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Entities\UserEntityInterface;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 use WolfpackIT\oauth\components\Repository;
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
 use WolfpackIT\oauth\models\activeRecord\AuthCode;
 use WolfpackIT\oauth\models\activeRecord\Client;
+use yii\base\InvalidConfigException;
 
 /**
  * Class AuthCodeRepository
@@ -20,12 +21,17 @@ class AuthCodeRepository
     implements AuthCodeRepositoryInterface
 {
     /**
+     * @var string
+     */
+    public $modelClass = AuthCode::class;
+
+    /**
      * @param $identifier
      * @return null|AuthCode
      */
     protected function findAuthCode($identifier): ?AuthCode
     {
-        return AuthCode::find()->andWhere(['identifier' => $identifier])->one();
+        return $this->modelClass::find()->andWhere(['identifier' => $identifier])->one();
     }
 
     /**
@@ -34,7 +40,7 @@ class AuthCodeRepository
      */
     public function findActiveAuthCodesForUserEntity(UserEntityInterface $userEntity): array
     {
-        return AuthCode::find()->andWhere(['user_id' => $userEntity->getIdentifier()])->active()->all();
+        return $this->modelClass::find()->andWhere(['user_id' => $userEntity->getId()])->active()->all();
     }
 
     /**
@@ -44,7 +50,7 @@ class AuthCodeRepository
      */
     public function findActiveAuthCodesForUserEntityAndClientEntity(UserEntityInterface $userEntity, ClientEntityInterface $clientEntity): array
     {
-        return AuthCode::find()->andWhere(['user_id' => $userEntity->getIdentifier(), 'client_id' => $clientEntity->getId()])->active()->all();
+        return $this->modelClass::find()->andWhere(['user_id' => $userEntity->getId(), 'client_id' => $clientEntity->getId()])->active()->all();
     }
 
     /**
@@ -52,9 +58,18 @@ class AuthCodeRepository
      */
     public function getNewAuthCode(): AuthCodeEntityInterface
     {
-        return new AuthCode([
+        return new $this->modelClass([
             'status' => AuthCode::STATUS_CREATION
         ]);
+    }
+
+    public function init()
+    {
+        if (!is_subclass_of($this->modelClass, AuthCodeEntityInterface::class)) {
+            throw new InvalidConfigException('Model class must implement ' . AuthCodeEntityInterface::class);
+        }
+
+        parent::init();
     }
 
     /**
@@ -83,7 +98,7 @@ class AuthCodeRepository
      * Revokes all auth codes for a user and client
      *
      * @param UserEntityInterface $userEntity
-     * @param ClientEntityInterface $client
+     * @param Client $client
      * @return int
      */
     public function revokeAllAuthCodesForUserAndClient(UserEntityInterface $userEntity, ClientEntityInterface $client): int
@@ -91,8 +106,8 @@ class AuthCodeRepository
         return AuthCode::updateAll(
             ['status' => AuthCode::STATUS_REVOKED],
             [
-                'user_id' => $userEntity->getIdentifier(),
-                'client_id' => Client::find()->select('id')->andWhere(['identifier' => $client->getIdentifier()])
+                'user_id' => $userEntity->getId(),
+                'client_id' => $client->getId()
             ]
         );
     }

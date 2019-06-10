@@ -1,17 +1,13 @@
 <?php
 
-namespace oauth\components\repository;
+namespace WolfpackIT\oauth\components\repository;
 
-use common\models\form\session\Create;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Entities\UserEntityInterface;
 use League\OAuth2\Server\Repositories\UserRepositoryInterface;
 use WolfpackIT\oauth\components\Repository;
-use WolfpackIT\oauth\models\activeRecord\User;
-use SamIT\Yii2\UrlSigner\UrlSigner;
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
+use WolfpackIT\oauth\Module;
 use yii\base\InvalidConfigException;
-use yii\helpers\ArrayHelper;
-use yii\helpers\Json;
 
 /**
  * Class UserRepository
@@ -22,7 +18,12 @@ class UserRepository
     implements UserRepositoryInterface
 {
     /**
-     * TODO implement check for $grantType
+     * @var string
+     */
+    public $modelClass;
+
+    /**
+     * TODO implement check for $grantType with client
      *
      * @param string $username
      * @param string $password
@@ -37,64 +38,19 @@ class UserRepository
         $grantType,
         ClientEntityInterface $clientEntity
     ): ?UserEntityInterface {
-        $sessionCreateModel = new Create(\Yii::$app->user);
-        $sessionCreateModel->username = $username;
-        $sessionCreateModel->password = $password;
+        $user = $this->modelClass::findByUsernamePassword($username, $password);
 
-        //The case it was an internal request
-        if ($result = $this->getUserFromSignedRequest(
-            \Yii::$app->request->bodyParams,
-            \Yii::createObject(UrlSigner::class)->secret,
-            User::getPasswordAttribute()
-        )) {
-            return $result;
-        }
-
-        return
-            $sessionCreateModel->validate()
-                ? User::findOne(['id' => $sessionCreateModel->getUser()->id])
-                : null
-        ;
+        return $user;
     }
 
-    /**
-     * @param array $data
-     * @param string $secret
-     * @param string $signatureAttribute
-     * @return User|null
-     * @throws InvalidConfigException
-     */
-    protected function getUserFromSignedRequest(array $data, string $secret, string $signatureAttribute): ?User
+    public function init()
     {
-        $signature = ArrayHelper::remove($data, $signatureAttribute);
+        $this->modelClass = $this->modelClass ?? Module::getInstance()->userClass;
 
-        $sortedData = $data;
-        ksort($sortedData);
-
-        $newSignature = \Yii::$app->security->hashData(Json::encode($sortedData), $secret);
-
-        if ($newSignature === $signature) {
-            return User::findOne([User::getUsernameAttribute() => $data['username']]);
+        if (!is_subclass_of($this->modelClass, UserEntityInterface::class)) {
+            throw new InvalidConfigException('Model class must implement ' . UserEntityInterface::class);
         }
 
-        return null;
-    }
-
-    /**
-     * @param array $data
-     * @param string $secret
-     * @param string $signatureAttribute
-     * @return array
-     * @throws InvalidConfigException
-     */
-    public function signRequestData(array $data, string $secret, string $signatureAttribute): array
-    {
-        $sortedData = $data;
-        ksort($sortedData);
-
-        $signature = \Yii::$app->security->hashData(Json::encode($sortedData), $secret);
-        $data[$signatureAttribute] = $signature;
-
-        return $data;
+        parent::init();
     }
 }

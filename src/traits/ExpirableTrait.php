@@ -1,12 +1,12 @@
 <?php
 
-namespace oauth\traits;
+namespace WolfpackIT\oauth\traits;
 
 use yii\db\ActiveRecordInterface;
 
 /**
  * Trait ExpirableTrait
- * @package oauth\traits
+ * @package WolfpackIT\oauth\traits
  */
 trait ExpirableTrait
 {

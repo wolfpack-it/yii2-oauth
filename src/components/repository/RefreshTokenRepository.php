@@ -1,28 +1,43 @@
 <?php
 
-namespace oauth\components\repository;
+namespace WolfpackIT\oauth\components\repository;
 
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
-use League\OAuth2\Server\Entities\UserEntityInterface;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
-use oauth\components\Repository;
-use oauth\models\activeRecord\AccessToken;
-use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\RefreshToken;
+use WolfpackIT\oauth\components\Repository;
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
+use WolfpackIT\oauth\models\activeRecord\AccessToken;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\activeRecord\RefreshToken;
+use yii\base\InvalidConfigException;
 
+/**
+ * Class RefreshTokenRepository
+ * @package WolfpackIT\oauth\components\repository
+ */
 class RefreshTokenRepository
     extends Repository
     implements RefreshTokenRepositoryInterface
 {
+    /**
+     * @var string
+     */
+    public $accessTokenClass = AccessToken::class;
+
+    /**
+     * @var string
+     */
+    public $modelClass = RefreshToken::class;
+
     /**
      * @param $identifier
      * @return array|null|RefreshToken
      */
     protected function findRefreshToken($identifier): ?RefreshToken
     {
-        return RefreshToken::find()->andWhere(['identifier' => $identifier])->one();
+        return $this->modelClass::find()->andWhere(['identifier' => $identifier])->one();
     }
 
     /**
@@ -31,8 +46,8 @@ class RefreshTokenRepository
      */
     public function findActiveRefreshTokensForUserEntity(UserEntityInterface $userEntity): array
     {
-        $accessTokenIdsQuery = AccessToken::find()->andWhere(['user_id' => $userEntity->getIdentifier()])->select('id');
-        return RefreshToken::find()->andWhere(['access_token_id' => $accessTokenIdsQuery])->active()->all();
+        $accessTokenIdsQuery = $this->accessTokenClass::find()->andWhere(['user_id' => $userEntity->getId()])->select('id');
+        return $this->modelClass::find()->andWhere(['access_token_id' => $accessTokenIdsQuery])->active()->all();
     }
 
     /**
@@ -42,8 +57,8 @@ class RefreshTokenRepository
      */
     public function findActiveRefreshTokensForUserEntityAndClientEntity(UserEntityInterface $userEntity, ClientEntityInterface $clientEntity): array
     {
-        $accessTokenIdsQuery = AccessToken::find()->andWhere(['user_id' => $userEntity->getIdentifier(), 'client_id' => $clientEntity->getId()])->select('id');
-        return RefreshToken::find()->andWhere(['access_token_id' => $accessTokenIdsQuery])->active()->all();
+        $accessTokenIdsQuery = $this->accessTokenClass::find()->andWhere(['user_id' => $userEntity->getId(), 'client_id' => $clientEntity->getId()])->select('id');
+        return $this->modelClass::find()->andWhere(['access_token_id' => $accessTokenIdsQuery])->active()->all();
     }
 
     /**
@@ -51,9 +66,18 @@ class RefreshTokenRepository
      */
     public function getNewRefreshToken(): RefreshTokenEntityInterface
     {
-        return new RefreshToken([
+        return new $this->modelClass([
             'status' => RefreshToken::STATUS_CREATION
         ]);
+    }
+
+    public function init()
+    {
+        if (!is_subclass_of($this->modelClass, RefreshTokenEntityInterface::class)) {
+            throw new InvalidConfigException('Model class must implement ' . RefreshTokenEntityInterface::class);
+        }
+
+        parent::init();
     }
 
     /**
@@ -82,19 +106,19 @@ class RefreshTokenRepository
      * Revokes all refresh tokens for a user and client
      *
      * @param UserEntityInterface $userEntity
-     * @param ClientEntityInterface $client
+     * @param Client $client
      * @return int
      */
     public function revokeAllRefreshTokensForUserAndClient(UserEntityInterface $userEntity, ClientEntityInterface $client): int
     {
-        $accessTokenIdsQuery = AccessToken::find()
+        $accessTokenIdsQuery = $this->accessTokenClass::find()
             ->andWhere([
-                'user_id' => $userEntity->getIdentifier(),
-                'client_id' => Client::find()->select('id')->andWhere(['identifier' => $client->getIdentifier()])
+                'user_id' => $userEntity->getId(),
+                'client_id' => $client->getId()
             ])
             ->select('id');
 
-        return RefreshToken::updateAll(
+        return $this->modelClass::updateAll(
             ['status' => RefreshToken::STATUS_REVOKED],
             [
                 'access_token_id' => $accessTokenIdsQuery

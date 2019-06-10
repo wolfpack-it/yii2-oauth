@@ -1,49 +1,70 @@
 <?php
 
-namespace oauth\models\search;
+namespace WolfpackIT\oauth\models\search;
 
-use common\components\dataProviders\FilteredActiveDataProvider;
-use common\components\User as UserComponent;
-use oauth\models\activeRecord\Client as ActiveRecordClient;
-use oauth\models\activeRecord\Permission;
-use oauth\models\Search;
-use oauth\queries\activeQuery\ClientQuery;
+use WolfpackIT\oauth\models\activeRecord\Client as ActiveRecordClient;
+use WolfpackIT\oauth\models\Search;
+use WolfpackIT\oauth\queries\activeQuery\ClientQuery;
+use yii\data\ActiveDataProvider;
 use yii\data\DataProviderInterface;
 use yii\validators\RangeValidator;
 use yii\validators\StringValidator;
+use yii\web\User;
 
 /**
  * Class Client
- * @package oauth\models\search
+ * @package WolfpackIT\oauth\models\search
  */
 class Client extends Search
 {
+    /**
+     * @var string
+     */
+    public $clientClass = ActiveRecordClient::class;
+
+    /**
+     * @var string
+     */
     public $name;
+
+    /**
+     * @var string
+     */
     public $status;
 
+    /**
+     * @var bool
+     */
     public $showDeleted = false;
 
-    /** @var UserComponent */
-    protected $userComponent;
+    /**
+     * @var User
+     */
+    protected $user;
 
-    public function __construct(UserComponent $userComponent, array $config = [])
+    /**
+     * Client constructor.
+     * @param User $user
+     * @param array $config
+     */
+    public function __construct(User $user, array $config = [])
     {
-        $this->userComponent = $userComponent;
+        $this->user = $user;
         parent::__construct($config);
     }
 
+    /**
+     * @return DataProviderInterface
+     */
     protected function getBaseDataProvider(): DataProviderInterface
     {
-        return new FilteredActiveDataProvider([
-            'query' => ActiveRecordClient::find(),
-            'filter' => function(ActiveRecordClient $client) {
-                return $this->userComponent->can(Permission::PERMISSION_LIST, $client);
-            }
+        return new ActiveDataProvider([
+            'query' => $this->clientClass::find(),
         ]);
     }
 
     /**
-     * @param FilteredActiveDataProvider $dataProvider
+     * @param ActiveDataProvider $dataProvider
      * @return DataProviderInterface
      */
     protected function internalSearch(DataProviderInterface $dataProvider): DataProviderInterface
@@ -63,6 +84,9 @@ class Client extends Search
         return $dataProvider;
     }
 
+    /**
+     * @return array
+     */
     public function rules(): array
     {
         return [
@@ -71,6 +95,9 @@ class Client extends Search
         ];
     }
 
+    /**
+     * @return array
+     */
     public function statusOptions(): array
     {
         $client = new ActiveRecordClient();

@@ -1,8 +1,7 @@
 <?php
 
-namespace oauth\controllers;
+namespace WolfpackIT\oauth\controllers;
 
-use common\controllers\UsersController as CommonUsersController;
 use common\models\activeRecord\Permission;
 use oauth\components\repository\ScopeRepository;
 use oauth\components\User as UserComponent;
@@ -14,9 +13,9 @@ use yii\web\Request;
 
 /**
  * Class UsersController
- * @package oauth\controllers
+ * @package WolfpackIT\oauth\controllers
  */
-class UsersController extends CommonUsersController
+class UsersController extends Controller
 {
     protected $userClass = User::class;
 

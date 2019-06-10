@@ -2,29 +2,26 @@
 
 namespace WolfpackIT\oauth\models\activeRecord;
 
-use common\models\activeRecord\User;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
-use oauth\models\ActiveRecord;
-use oauth\queries\activeQuery\AccessTokenQuery;
-use oauth\traits\ExpirableTrait;
-use oauth\traits\IdentifiableTrait;
+use WolfpackIT\oauth\queries\activeQuery\AccessTokenQuery;
+use WolfpackIT\oauth\traits\ExpirableTrait;
+use WolfpackIT\oauth\traits\IdentifiableTrait;
+use yii\db\ActiveRecord;
 
 /**
  * Class AccessToken
- * @package oauth\models\activeRecord
+ * @package WolfpackIT\oauth\models\activeRecord
  *
  * @property int $id
  * @property int $client_id
  * @property-read Client $relatedClient
  * @property int $user_id
- * @property-read User $user
  * @property string $identifier
  * @property int $expired_at
  * @property int $status
- *
  * @property-read Scope[] $grantedScopes
  */
 class AccessToken
@@ -38,6 +35,16 @@ class AccessToken
     const STATUS_CREATION = -1;
     const STATUS_ENABLED = 1;
     const STATUS_REVOKED = 0;
+
+    /**
+     * @var string
+     */
+    protected $clientClass = Client::class;
+
+    /**
+     * @var string
+     */
+    protected $scopeClass = Scope::class;
 
     /**
      * @param Scope $scope
@@ -70,7 +77,7 @@ class AccessToken
      */
     public function getGrantedScopes()
     {
-        return $this->hasMany(Scope::class, ['id' => 'scope_id'])
+        return $this->hasMany($this->scopeClass, ['id' => 'scope_id'])
             ->viaTable('{{%access_token_scope}}', ['access_token_id' => 'id'])
         ;
     }
@@ -80,7 +87,7 @@ class AccessToken
      */
     public function getRelatedClient()
     {
-        return $this->hasOne(Client::class, ['id' => 'client_id']);
+        return $this->hasOne($this->clientClass, ['id' => 'client_id']);
     }
 
     /**

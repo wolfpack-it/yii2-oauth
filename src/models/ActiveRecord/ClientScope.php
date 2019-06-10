@@ -2,8 +2,8 @@
 
 namespace WolfpackIT\oauth\models\activeRecord;
 
-use oauth\models\ActiveRecord;
-use oauth\queries\activeQuery\ClientQuery;
+use WolfpackIT\oauth\queries\activeQuery\ClientQuery;
+use yii\db\ActiveRecord;
 
 /**
  * Class ClientScope
@@ -19,11 +19,21 @@ use oauth\queries\activeQuery\ClientQuery;
 class ClientScope extends ActiveRecord
 {
     /**
+     * @var string
+     */
+    protected $clientClass = Client::class;
+
+    /**
+     * @var string
+     */
+    protected $scopeClass = Scope::class;
+
+    /**
      * @return ClientQuery
      */
     public function getClient(): ClientQuery
     {
-        return $this->hasOne(Client::class, ['id' => 'client_id']);
+        return $this->hasOne($this->clientClass, ['id' => 'client_id']);
     }
 
     /**
@@ -31,6 +41,6 @@ class ClientScope extends ActiveRecord
      */
     public function getScope()
     {
-        return $this->hasOne(Scope::class, ['id' => 'scope_id']);
+        return $this->hasOne($this->scopeClass, ['id' => 'scope_id']);
     }
 }

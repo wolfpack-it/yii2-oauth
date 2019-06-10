@@ -10,5 +10,8 @@ use yii\base\Component;
  */
 abstract class Repository extends Component
 {
-
+    /**
+     * @var string
+     */
+    public $modelClass;
 }

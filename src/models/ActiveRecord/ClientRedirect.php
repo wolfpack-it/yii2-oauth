@@ -2,8 +2,8 @@
 
 namespace WolfpackIT\oauth\models\activeRecord;
 
-use oauth\models\ActiveRecord;
-use oauth\queries\activeQuery\ClientQuery;
+use WolfpackIT\oauth\queries\activeQuery\ClientQuery;
+use yii\db\ActiveRecord;
 use yii\validators\ExistValidator;
 use yii\validators\RequiredValidator;
 use yii\validators\UrlValidator;
@@ -19,11 +19,16 @@ use yii\validators\UrlValidator;
 class ClientRedirect extends ActiveRecord
 {
     /**
+     * @var string
+     */
+    protected $clientClass = Client::class;
+
+    /**
      * @return ClientQuery
      */
     public function getClient(): ClientQuery
     {
-        return $this->hasOne(Client::class, ['id' => 'client_id'])
+        return $this->hasOne($this->clientClass, ['id' => 'client_id'])
             ->inverseOf('clientRedirects')
         ;
     }

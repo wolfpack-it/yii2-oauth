@@ -1,6 +1,6 @@
 <?php
 
-namespace oauth\models\form\clients;
+namespace WolfpackIT\oauth\models\form\clients;
 
 use oauth\models\activeRecord\Client;
 use oauth\models\activeRecord\ClientScope;
@@ -16,10 +16,20 @@ use yii\validators\RangeValidator;
  */
 class Scopes extends Form
 {
+    /**
+     * @var Client
+     */
+    protected $client;
+
+    /**
+     * @var int[]
+     */
     public $scopes = [];
 
-    private $client;
-    private $_setScopes;
+    /**
+     * @var int[]
+     */
+    protected $_setScopes;
 
     /**
      * Scopes constructor.
@@ -46,7 +56,7 @@ class Scopes extends Form
     /**
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['scopes'], RangeValidator::class, 'range' => array_keys($this->scopeOptions()), 'allowArray' => true],
@@ -96,6 +106,9 @@ class Scopes extends Form
         return $result;
     }
 
+    /**
+     * @return array
+     */
     public function scopeOptions(): array
     {
         return ArrayHelper::map(

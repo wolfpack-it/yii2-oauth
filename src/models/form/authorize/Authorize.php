@@ -1,70 +1,67 @@
 <?php
 
-namespace oauth\models\form\authorize;
+namespace WolfpackIT\oauth\models\form\authorize;
 
 use League\OAuth2\Server\RequestTypes\AuthorizationRequest;
-use oauth\models\activeRecord\AccessToken;
-use oauth\models\activeRecord\AccessTokenScope;
-use oauth\models\activeRecord\AuthCode;
-use oauth\models\activeRecord\AuthCodeScope;
-use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\RefreshToken;
-use oauth\models\activeRecord\Scope;
-use oauth\models\activeRecord\User;
-use oauth\models\Form;
+use WolfpackIT\oauth\components\UserClientService;
+use WolfpackIT\oauth\interfaces\ClientEntityInterface;
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
+use WolfpackIT\oauth\models\activeRecord\Scope;
+use WolfpackIT\oauth\models\Form;
 use yii\validators\BooleanValidator;
 use yii\validators\DefaultValueValidator;
 use yii\validators\RequiredValidator;
 
 /**
  * Class Authorize
- * @package oauth\models\form\authorize
+ * @package WolfpackIT\oauth\models\form\authorize
  */
 class Authorize extends Form
 {
+    /**
+     * @var bool
+     */
     public $authorizeScopes;
 
+    /**
+     * @var AuthorizationRequest
+     */
     protected $authorizationRequest;
+
+    /**
+     * @var UserEntityInterface
+     */
     protected $user;
+
+    /**
+     * @var UserClientService
+     */
+    protected $userClientService;
 
     /**
      * Authorize constructor.
      * @param AuthorizationRequest $authorizationRequest
-     * @param User $user
+     * @param UserClientService $userClientService
+     * @param UserEntityInterface $user
      * @param array $config
      */
     public function __construct(
         AuthorizationRequest $authorizationRequest,
-        User $user,
+        UserClientService $userClientService,
+        UserEntityInterface $user,
         array $config = []
     ) {
         $this->authorizationRequest = $authorizationRequest;
+        $this->userClientService = $userClientService;
         $this->user = $user;
 
         parent::__construct($config);
     }
 
     /**
-     * @return int[]
+     * @return ClientEntityInterface
      */
-    protected function getAuthorizedScopeIds(): array
-    {
-        $client = $this->getClient();
-        $allAccessTokenIds = AccessToken::find()->andWhere(['user_id' => $this->user->id, 'client_id' => $client->id])->select('id')->asArray()->column();
-        $validAccessTokenIdsByRefreshToken = RefreshToken::find()->andWhere(['access_token_id' => $allAccessTokenIds])->active()->select('access_token_id')->asArray()->column();
-        $validAccessTokenIds = AccessToken::find()->andWhere(['user_id' => $this->user->id, 'client_id' => $client->id])->active()->select('id')->asArray()->column();
-        $accessTokenScopeIds = AccessTokenScope::find()->andWhere(['access_token_id' => array_merge($validAccessTokenIdsByRefreshToken, $validAccessTokenIds)])->select('scope_id')->column();
-
-        $validAuthCodeIds = AuthCode::find()->andWhere(['user_id' => $this->user->id, 'client_id' => $client->id])->active()->select('id')->asArray()->column();
-        $authCodeScopeIds = AuthCodeScope::find()->andWhere(['auth_code_id' => $validAuthCodeIds])->select('scope_id')->column();
-
-        return array_unique(array_merge($accessTokenScopeIds, $authCodeScopeIds));
-    }
-
-    /**
-     * @return Client
-     */
-    public function getClient(): Client
+    public function getClient(): ClientEntityInterface
     {
         return $this->authorizationRequest->getClient();
     }
@@ -74,7 +71,7 @@ class Authorize extends Form
      */
     public function getNewScopes(): array
     {
-        $authorizedScopeIds = $this->getAuthorizedScopeIds();
+        $authorizedScopeIds = $this->userClientService->getAuthorizedScopesForUserAndClient($this->user, $this->getClient());
         return array_filter(
             $this->getScopes(),
             function(Scope $scope) use ($authorizedScopeIds) {

@@ -1,10 +1,10 @@
 <?php
 
-namespace oauth\models\form\clients;
+namespace WolfpackIT\oauth\models\form\clients;
 
-use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\ClientRedirect;
-use oauth\models\Form;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\activeRecord\ClientRedirect;
+use WolfpackIT\oauth\models\Form;
 use yii\helpers\ArrayHelper;
 use yii\validators\DefaultValueValidator;
 use yii\validators\RequiredValidator;
@@ -12,13 +12,23 @@ use yii\validators\UrlValidator;
 
 /**
  * Class Redirects
- * @package oauth\models\form\clients
+ * @package WolfpackIT\oauth\models\form\clients
  */
 class Redirects extends Form
 {
+    /**
+     * @var string[]
+     */
     public $redirects = [];
 
-    private $client;
+    /**
+     * @var Client
+     */
+    protected $client;
+
+    /**
+     * @var string[]
+     */
     private $_setRedirects;
 
     /**
@@ -36,7 +46,7 @@ class Redirects extends Form
     /**
      * @return array
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'redirects' => \Yii::t('app', 'Redirects')
@@ -83,10 +93,10 @@ class Redirects extends Form
 
                 //Add new redirects
                 $redirectsToAdd = array_diff($this->redirects, $this->_setRedirects);
-                foreach ($redirectsToAdd as $redirectsToAdd) {
+                foreach ($redirectsToAdd as $redirectToAdd) {
                     $clientRedirect = new ClientRedirect([
                         'client_id' => $this->client->id,
-                        'redirect_uri' => $redirectsToAdd
+                        'redirect_uri' => $redirectToAdd
                     ]);
                     $result &= $clientRedirect->save();
                 }
@@ -103,5 +113,4 @@ class Redirects extends Form
 
         return $result;
     }
-
 }

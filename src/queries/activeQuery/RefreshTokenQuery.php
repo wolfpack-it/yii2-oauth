@@ -2,8 +2,8 @@
 
 namespace WolfpackIT\oauth\queries\activeQuery;
 
-use oauth\models\activeRecord\RefreshToken;
-use oauth\queries\ActiveQuery;
+use WolfpackIT\oauth\models\activeRecord\RefreshToken;
+use WolfpackIT\oauth\queries\ActiveQuery;
 use yii\db\Expression;
 
 /**

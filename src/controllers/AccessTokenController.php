@@ -1,14 +1,14 @@
 <?php
 
-namespace oauth\controllers;
+namespace WolfpackIT\oauth\controllers;
 
-use common\controllers\RestController;
-use League\OAuth2\Server\Exception\OAuthServerException;
-use oauth\components\AuthorizationServer;
-use oauth\components\WebRequest;
-use oauth\components\WebResponse;
+use WolfpackIT\oauth\actions\AccessTokenAction;
 use yii\rest\OptionsAction;
 
+/**
+ * Class AccessTokenController
+ * @package WolfpackIT\oauth\controllers
+ */
 class AccessTokenController extends RestController
 {
     /**
@@ -17,6 +17,9 @@ class AccessTokenController extends RestController
     public function actions(): array
     {
         return [
+            'index' => [
+                'class' => AccessTokenAction::class,
+            ],
             'options' => [
                 'class' => OptionsAction::class
             ]
@@ -24,30 +27,17 @@ class AccessTokenController extends RestController
     }
 
     /**
-     * Required params to send: see https://oauth2.thephpleague.com/authorization-server/
+     * @return array
      */
-    public function actionIndex(
-        AuthorizationServer $authorizationServer,
-        WebRequest $request,
-        WebResponse $response
-    ) {
-        try {
-            $authorizationServer->respondToAccessTokenRequest($request, $response);
-            //Since the default response format is json, json decode it so content negotiation works
-            return json_decode($response->content);
-        } catch (OAuthServerException $exception) {
-            return $exception->generateHttpResponse($response);
-        } catch (\Exception $exception) {
-            return $exception;
-        }
-    }
-
     public function behaviors(): array
     {
         $result = parent::behaviors();
+
         $result['authenticator']['optional'] = [
             'index',
+            'options'
         ];
+
         return $result;
     }
 }

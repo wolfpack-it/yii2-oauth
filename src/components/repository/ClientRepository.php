@@ -2,26 +2,41 @@
 
 namespace oauth\components\repository;
 
+use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
-use oauth\components\Repository;
-use oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\components\Repository;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
 
 /**
  * Class ClientRepository
- * @package oauth\components\repository
+ * @package WolfpackIT\oauth\components\repository
  */
 class ClientRepository
     extends Repository
     implements ClientRepositoryInterface
 {
+    /**
+     * @var string
+     */
+    public $modelClass = Client::class;
+
+    /**
+     * @param string $clientIdentifier
+     * @param null $grantType
+     * @param null $clientSecret
+     * @param bool $mustValidateSecret
+     * @return Client|null
+     */
     public function getClientEntity(
         $clientIdentifier,
         $grantType = null,
         $clientSecret = null,
         $mustValidateSecret = true
     ): ?Client {
-        $client = Client::find()
+        /** @var Client $client */
+        $client = $this->modelClass::find()
             ->active()
             ->notDeleted()
             ->innerJoinWith(['clientGrantTypes' => function(ActiveQuery $query) use ($grantType) {
@@ -42,5 +57,14 @@ class ClientRepository
         }
 
         return null;
+    }
+
+    public function init()
+    {
+        if (!is_subclass_of($this->modelClass, ClientEntityInterface::class)) {
+            throw new InvalidConfigException('Model class must implement ' . ClientEntityInterface::class);
+        }
+
+        parent::init();
     }
 }

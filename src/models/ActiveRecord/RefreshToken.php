@@ -4,10 +4,10 @@ namespace WolfpackIT\oauth\models\activeRecord;
 
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
-use WolfpackIT\oauth\models\ActiveRecord;
 use WolfpackIT\oauth\queries\activeQuery\RefreshTokenQuery;
 use WolfpackIT\oauth\traits\ExpirableTrait;
 use WolfpackIT\oauth\traits\IdentifiableTrait;
+use yii\db\ActiveRecord;
 
 /**
  * Class RefreshToken
@@ -24,17 +24,17 @@ class RefreshToken
     extends ActiveRecord
     implements RefreshTokenEntityInterface
 {
-    /**
-     * @var string
-     */
-    protected $accessTokenClass = AccessToken::class;
-
     use ExpirableTrait;
     use IdentifiableTrait;
 
     const STATUS_CREATION = -1;
     const STATUS_ENABLED = 1;
     const STATUS_REVOKED = 0;
+
+    /**
+     * @var string
+     */
+    protected $accessTokenClass = AccessToken::class;
 
     /**
      * Ignore the invalidConfigException

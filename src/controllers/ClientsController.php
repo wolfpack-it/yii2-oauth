@@ -1,6 +1,6 @@
 <?php
 
-namespace oauth\controllers;
+namespace WolfpackIT\oauth\controllers;
 
 use common\components\User as UserComponent;
 use common\exceptions\ForbiddenPermissionHttpException;
@@ -15,6 +15,10 @@ use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
 use yii\web\Request;
 
+/**
+ * Class ClientsController
+ * @package WolfpackIT\oauth\controllers
+ */
 class ClientsController extends Controller
 {
     public $defaultAction = 'list';

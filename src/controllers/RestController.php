@@ -3,13 +3,13 @@
 namespace WolfpackIT\oauth\controllers;
 
 use SamIT\Yii2\Traits\ActionInjectionTrait;
-use yii\web\Controller as YiiController;
+use yii\rest\Controller;
 
 /**
- * Class Controller
+ * Class RestController
  * @package WolfpackIT\oauth\controllers
  */
-abstract class Controller extends YiiController
+abstract class RestController extends Controller
 {
     use ActionInjectionTrait;
 }

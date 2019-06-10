@@ -1,29 +1,56 @@
 <?php
 
-namespace oauth\components\repository;
+namespace WolfpackIT\oauth\components\repository;
 
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
-use League\OAuth2\Server\Entities\UserEntityInterface;
 use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
-use oauth\components\Repository;
-use oauth\models\activeRecord\AccessToken;
-use oauth\models\activeRecord\AccessTokenScope;
-use oauth\models\activeRecord\AuthCodeScope;
-use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\Scope;
+use WolfpackIT\oauth\components\Repository;
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
+use WolfpackIT\oauth\models\activeRecord\AccessTokenScope;
+use WolfpackIT\oauth\models\activeRecord\AuthCodeScope;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\activeRecord\Scope;
+use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
 use yii\helpers\ArrayHelper;
 
+/**
+ * Class ScopeRepository
+ * @package WolfpackIT\oauth\components\repository
+ */
 class ScopeRepository
     extends Repository
     implements ScopeRepositoryInterface
 {
-    /** @var AccessTokenRepository */
+    /**
+     * @var AccessTokenRepository
+     */
     protected $accessTokenRepository;
-    /** @var AuthCodeRepository */
+
+    /**
+     * @var string
+     */
+    public $accessTokenScopeClass = AccessTokenScope::class;
+
+    /**
+     * @var AuthCodeRepository
+     */
     protected $authCodeRepository;
-    /** @var RefreshTokenRepository */
+
+    /**
+     * @var string
+     */
+    public $authCodeScopeClass = AuthCodeScope::class;
+
+    /**
+     * @var string
+     */
+    public $modelClass = Scope::class;
+
+    /**
+     * @var RefreshTokenRepository
+     */
     protected $refreshTokenRepository;
 
     /**
@@ -54,26 +81,26 @@ class ScopeRepository
     {
         $refreshTokens = $this->refreshTokenRepository->findActiveRefreshTokensForUserEntityAndClientEntity($userEntity, $clientEntity);
         $accessTokens = ArrayHelper::merge(
-            AccessToken::find()->andWhere(['id' => ArrayHelper::getColumn($refreshTokens, 'access_token_id')])->indexBy('id')->all(),
+            $this->accessTokenRepository->modelClass::find()->andWhere(['id' => ArrayHelper::getColumn($refreshTokens, 'access_token_id')])->indexBy('id')->all(),
             ArrayHelper::index($this->accessTokenRepository->findActiveAccessTokensForUserEntityAndClientEntity($userEntity, $clientEntity), 'id')
         );
         $authCodes = $this->authCodeRepository->findActiveAuthCodesForUserEntityAndClientEntity($userEntity, $clientEntity);
 
         $scopeIds = array_unique(array_merge(
-            AccessTokenScope::find()->andWhere(['access_token_id' => ArrayHelper::getColumn($accessTokens, 'id')])->select('scope_id')->column(),
-            AuthCodeScope::find()->andWhere(['auth_code_id' => ArrayHelper::getColumn($authCodes, 'id')])->select('scope_id')->column()
+            $this->accessTokenScopeClass::find()->andWhere(['access_token_id' => ArrayHelper::getColumn($accessTokens, 'id')])->select('scope_id')->column(),
+            $this->authCodeScopeClass::find()->andWhere(['auth_code_id' => ArrayHelper::getColumn($authCodes, 'id')])->select('scope_id')->column()
         ));
 
-        return Scope::findAll(['id' => $scopeIds]);
+        return $this->modelClass::findAll(['id' => $scopeIds]);
     }
 
     /**
      * @param string $identifier
      * @return ScopeEntityInterface|null
      */
-    public function getScopeEntityByIdentifier($identifier): ?ScopeEntityInterface
+    public function getScopeEntityByIdentifier($identifier): ?Scope
     {
-        return Scope::find()->andWhere(['identifier' => $identifier])->one();
+        return $this->modelClass::find()->andWhere(['identifier' => $identifier])->one();
     }
 
     /**
@@ -110,5 +137,14 @@ class ScopeRepository
             $permittedScopes->andWhere(['in', 'identifier', $scopes]);
         }
         return $permittedScopes->all();
+    }
+
+    public function init()
+    {
+        if (!is_subclass_of($this->modelClass, ScopeEntityInterface::class)) {
+            throw new InvalidConfigException('Model class must implement ' . ScopeEntityInterface::class);
+        }
+
+        parent::init();
     }
 }

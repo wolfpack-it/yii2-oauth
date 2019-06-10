@@ -1,20 +1,26 @@
 <?php
 
-namespace WolfpackIT\\models\activeRecord;
+namespace WolfpackIT\oauth\models\activeRecord;
 
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
-use oauth\queries\activeQuery\AuthCodeQuery;
+use WolfpackIT\oauth\queries\activeQuery\AuthCodeQuery;
+use yii\db\ActiveQuery;
 
 /**
  * Class AuthCode
- * @package oauth\models\activeRecord
+ * @package WolfpackIT\oauth\models\activeRecord
  *
- * @inheritdoc
+ * @property string $redirectUri
  */
 class AuthCode
     extends AccessToken
     implements AuthCodeEntityInterface
 {
+    /**
+     * @var string
+     */
+    protected $scopeClass = Scope::class;
+
     /**
      * Ignore the invalidConfigException
      *
@@ -26,11 +32,11 @@ class AuthCode
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getGrantedScopes()
     {
-        return $this->hasMany(Scope::class, ['id' => 'scope_id'])
+        return $this->hasMany($this->scopeClass, ['id' => 'scope_id'])
             ->viaTable('{{%auth_code_scope}}', ['auth_code_id' => 'id'])
         ;
     }

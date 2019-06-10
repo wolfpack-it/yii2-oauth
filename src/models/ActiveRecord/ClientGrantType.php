@@ -2,8 +2,8 @@
 
 namespace WolfpackIT\oauth\models\activeRecord;
 
-use oauth\models\ActiveRecord;
-use oauth\queries\activeQuery\ClientQuery;
+use WolfpackIT\oauth\queries\activeQuery\ClientQuery;
+use yii\db\ActiveRecord;
 use yii\validators\ExistValidator;
 use yii\validators\RangeValidator;
 use yii\validators\RequiredValidator;
@@ -25,11 +25,16 @@ class ClientGrantType extends ActiveRecord
     const GRANT_TYPE_REFRESH_TOKEN = 'refresh_token';
 
     /**
+     * @var string
+     */
+    protected $clientClass = Client::class;
+
+    /**
      * @return ClientQuery
      */
     public function getClient(): ClientQuery
     {
-        return $this->hasOne(Client::class, ['id' => 'client_id']);
+        return $this->hasOne($this->clientClass, ['id' => 'client_id']);
     }
 
     /**

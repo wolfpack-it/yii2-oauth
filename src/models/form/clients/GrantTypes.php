@@ -1,17 +1,17 @@
 <?php
 
-namespace oauth\models\form\clients;
+namespace WolfpackIT\oauth\models\form\clients;
 
-use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\ClientGrantType;
-use oauth\models\Form;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\activeRecord\ClientGrantType;
+use WolfpackIT\oauth\models\Form;
 use yii\helpers\ArrayHelper;
 use yii\validators\DefaultValueValidator;
 use yii\validators\RangeValidator;
 
 /**
  * Class GrantTypes
- * @package oauth\models\form
+ * @package WolfpackIT\oauth\models\form
  */
 class GrantTypes extends Form
 {
@@ -53,7 +53,7 @@ class GrantTypes extends Form
     /**
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['grantTypes'], RangeValidator::class, 'range' => array_keys($this->grantTypeOptions()), 'allowArray' => true],

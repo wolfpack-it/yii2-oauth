@@ -4,13 +4,14 @@ namespace WolfpackIT\oauth\components\repository;
 
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Entities\UserEntityInterface;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
-use oauth\components\Repository;
-use oauth\models\activeRecord\AccessToken;
-use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\Scope;
+use WolfpackIT\oauth\components\Repository;
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
+use WolfpackIT\oauth\models\activeRecord\AccessToken;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\activeRecord\Scope;
+use yii\base\InvalidConfigException;
 
 /**
  * Class AccessTokenRepository
@@ -21,12 +22,17 @@ class AccessTokenRepository
     implements AccessTokenRepositoryInterface
 {
     /**
+     * @var string
+     */
+    public $modelClass = AccessToken::class;
+
+    /**
      * @param $identifier
      * @return null|AccessToken
      */
     protected function findAccessToken($identifier): ?AccessToken
     {
-        return AccessToken::find()->andWhere(['identifier' => $identifier])->one();
+        return $this->modelClass::find()->andWhere(['identifier' => $identifier])->one();
     }
 
     /**
@@ -35,7 +41,7 @@ class AccessTokenRepository
      */
     public function findActiveAccessTokensForUserEntity(UserEntityInterface $userEntity): array
     {
-        return AccessToken::find()->andWhere(['user_id' => $userEntity->getIdentifier()])->active()->all();
+        return $this->modelClass::find()->andWhere(['user_id' => $userEntity->getId()])->active()->all();
     }
 
     /**
@@ -45,7 +51,7 @@ class AccessTokenRepository
      */
     public function findActiveAccessTokensForUserEntityAndClientEntity(UserEntityInterface $userEntity, ClientEntityInterface $clientEntity): array
     {
-        return AccessToken::find()->andWhere(['user_id' => $userEntity->getIdentifier(), 'client_id' => $clientEntity->getId()])->active()->all();
+        return $this->modelClass::find()->andWhere(['user_id' => $userEntity->getId(), 'client_id' => $clientEntity->getId()])->active()->all();
     }
 
     /**
@@ -54,10 +60,11 @@ class AccessTokenRepository
      * @param int $userIdentifier
      * @return AccessTokenEntityInterface
      */
-    public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null)
+    public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null): AccessToken
     {
-        $accessToken = new AccessToken([
-            'client_id' => $clientEntity->id,
+        /** @var AccessToken $accessToken */
+        $accessToken = new $this->modelClass([
+            'client_id' => $clientEntity->getId(),
             'user_id' => $userIdentifier,
             'status' => AccessToken::STATUS_CREATION
         ]);
@@ -66,6 +73,14 @@ class AccessTokenRepository
         return $accessToken;
     }
 
+    public function init()
+    {
+        if (!is_subclass_of($this->modelClass, AccessTokenEntityInterface::class)) {
+            throw new InvalidConfigException('Model class must implement ' . AccessTokenEntityInterface::class);
+        }
+
+        parent::init();
+    }
 
     /**
      * @param string $codeId
@@ -93,16 +108,16 @@ class AccessTokenRepository
      * Revokes all access tokens for a user and client
      *
      * @param UserEntityInterface $userEntity
-     * @param ClientEntityInterface $client
+     * @param Client $client
      * @return int
      */
     public function revokeAllAccessTokensForUserAndClient(UserEntityInterface $userEntity, ClientEntityInterface $client): int
     {
-        return AccessToken::updateAll(
+        return $this->modelClass::updateAll(
             ['status' => AccessToken::STATUS_REVOKED],
             [
-                'user_id' => $userEntity->getIdentifier(),
-                'client_id' => Client::find()->select('id')->andWhere(['identifier' => $client->getIdentifier()])
+                'user_id' => $userEntity->getId(),
+                'client_id' => $client->getId()
             ]
         );
     }
