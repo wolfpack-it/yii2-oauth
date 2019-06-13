@@ -21,7 +21,7 @@ interface UserEntityInterface extends LeagueUserEntityInterface
     public static function findByUsernamePassword(string $username, string $password): ?UserEntityInterface;
 
     /**
-     * @return int
+     * @return string
      */
-    public function getId(): int;
+    public function getId(): string;
 }

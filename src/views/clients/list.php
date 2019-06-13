@@ -1,13 +1,13 @@
 <?php
 
-use common\objects\ActionColumn;
-use common\widgets\GridView;
-use oauth\components\User as UserComponent;
+use kartik\icons\Icon;
 use oauth\helpers\Html;
 use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\Permission;
-use oauth\models\search\Client as ClientSearch;
+use WolfpackIT\oauth\models\search\Client as ClientSearch;
+use WolfpackIT\oauth\Module;
 use yii\data\DataProviderInterface;
+use yii\grid\GridView;
+use yii\web\User as UserComponent;
 use yii\web\View;
 
 /**
@@ -15,18 +15,20 @@ use yii\web\View;
  * @var ClientSearch $clientSearch
  * @var DataProviderInterface $clientDataProvider
  * @var UserComponent $user
+ * @var Module $module
  */
 
-$this->title = \Yii::t('app', 'Clients');
+$this->title = \Yii::t('oauth', 'Clients');
+
+echo Html::beginTag('div', ['class' => 'text-right']);
+echo $user->can($module->clientCreatePermission, new Client())
+    ? Html::a(\Yii::t('oauth', 'Create'), ['clients/create'], ['class' => 'btn btn-primary', 'data-pjax' => 0])
+    : '';
+echo Html::endTag('div');
 
 echo GridView::widget([
     'filterModel' => $clientSearch,
     'dataProvider' => $clientDataProvider,
-        'toolbar' =>
-            $user->can(Permission::PERMISSION_CREATE, new Client())
-                ? Html::a(\Yii::t('app', 'Create'), ['/clients/create'], ['class' => 'btn btn-primary', 'data-pjax' => 0])
-                : ''
-    ,
     'columns' => [
         'name',
         'identifier',
@@ -36,40 +38,55 @@ echo GridView::widget([
             'filter' => $clientSearch->statusOptions()
         ],
         [
-            'class' => ActionColumn::class,
+            'class' => \yii\grid\ActionColumn::class,
             'template' => '{update} {redirects} {grantTypes} {scopes} {delete}',
+            'headerOptions' => [
+                'style' => [
+                    'width' => '124px'
+                ]
+            ],
             'buttons' => [
-                'grantTypes' => function ($url, $model, $key) {
-                    $title = \Yii::t('app', 'Update grant types');
+                'update' => function ($url, $model, $key) {
+                    $title = \Yii::t('oauth', 'Update');
                     $options = ['title' => $title, 'aria-label' => $title, 'data-pjax' => '0'];
-                    return Html::a(Html::icon(Html::ICON_CLIENT_GRANT_TYPE), ['/clients/grant-types', 'id' => $model->id], $options);
+                    return Html::a(Icon::show('edit'), ['clients/update', 'id' => $model->id], $options);
+                },
+                'grantTypes' => function ($url, $model, $key) {
+                    $title = \Yii::t('oauth', 'Update grant types');
+                    $options = ['title' => $title, 'aria-label' => $title, 'data-pjax' => '0'];
+                    return Html::a(Icon::show('arrow-circle-down'), ['clients/grant-types', 'id' => $model->id], $options);
                 },
                 'redirects' => function ($url, $model, $key) {
-                    $title = \Yii::t('app', 'Update redirects');
+                    $title = \Yii::t('oauth', 'Update redirects');
                     $options = ['title' => $title, 'aria-label' => $title, 'data-pjax' => '0'];
-                    return Html::a(Html::icon(Html::ICON_CLIENT_REDIRECTS), ['/clients/redirects', 'id' => $model->id], $options);
+                    return Html::a(Icon::show('arrow-circle-left'), ['clients/redirects', 'id' => $model->id], $options);
                 },
                 'scopes' => function ($url, $model, $key) {
-                    $title = \Yii::t('app', 'Update scopes');
+                    $title = \Yii::t('oauth', 'Update scopes');
                     $options = ['title' => $title, 'aria-label' => $title, 'data-pjax' => '0'];
-                    return Html::a(Html::icon(Html::ICON_CLIENT_SCOPES), ['/clients/scopes', 'id' => $model->id], $options);
+                    return Html::a(Icon::show('arrow-circle-up'), ['clients/scopes', 'id' => $model->id], $options);
+                },
+                'delete' => function ($url, $model, $key) {
+                    $title = \Yii::t('oauth', 'Delete');
+                    $options = ['title' => $title, 'aria-label' => $title, 'data-pjax' => '0', 'data-method' => 'delete', 'data-confirm' => \Yii::t('oauth', 'Are you sure you want to delete the client?')];
+                    return Html::a(Icon::show('trash-alt'), ['clients/delete', 'id' => $model->id], $options);
                 }
             ],
             'visibleButtons' => [
-                'delete' => function($model, $key, $index) use ($user) {
-                    return $user->can(Permission::PERMISSION_DELETE, $model);
+                'delete' => function($model, $key, $index) use ($user, $module) {
+                    return $user->can($module->clientDeletePermission, $model);
                 },
-                'grantTypes' => function($model, $key, $index) use ($user) {
-                    return $user->can(Permission::PERMISSION_WRITE, $model);
+                'grantTypes' => function($model, $key, $index) use ($user, $module) {
+                    return $user->can($module->clientUpdatePermission, $model);
                 },
-                'redirects' => function($model, $key, $index) use ($user) {
-                    return $user->can(Permission::PERMISSION_WRITE, $model);
+                'redirects' => function($model, $key, $index) use ($user, $module) {
+                    return $user->can($module->clientUpdatePermission, $model);
                 },
-                'scopes' => function($model, $key, $index) use ($user) {
-                    return $user->can(Permission::PERMISSION_WRITE, $model);
+                'scopes' => function($model, $key, $index) use ($user, $module) {
+                    return $user->can($module->clientUpdatePermission, $model);
                 },
-                'update' => function($model, $key, $index) use ($user) {
-                    return $user->can(Permission::PERMISSION_WRITE, $model);
+                'update' => function($model, $key, $index) use ($user, $module) {
+                    return $user->can($module->clientUpdatePermission, $model);
                 },
             ]
         ]

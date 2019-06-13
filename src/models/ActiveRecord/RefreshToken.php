@@ -4,10 +4,10 @@ namespace WolfpackIT\oauth\models\activeRecord;
 
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
+use WolfpackIT\oauth\models\ActiveRecord;
 use WolfpackIT\oauth\queries\activeQuery\RefreshTokenQuery;
 use WolfpackIT\oauth\traits\ExpirableTrait;
 use WolfpackIT\oauth\traits\IdentifiableTrait;
-use yii\db\ActiveRecord;
 
 /**
  * Class RefreshToken
@@ -18,6 +18,7 @@ use yii\db\ActiveRecord;
  * @property-read AccessToken $relatedAccessToken
  * @property string $identifier
  * @property int $expired_at
+ * @property AccessToken $accessToken
  * @property int $status
  */
 class RefreshToken

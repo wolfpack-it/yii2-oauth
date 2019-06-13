@@ -2,9 +2,9 @@
 
 namespace WolfpackIT\oauth\models\activeRecord;
 
+use WolfpackIT\oauth\models\ActiveRecord;
 use WolfpackIT\oauth\queries\activeQuery\AccessTokenQuery;
 use yii\db\ActiveQuery;
-use yii\db\ActiveRecord;
 
 /**
  * Class AccessTokenScope

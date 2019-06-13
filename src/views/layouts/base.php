@@ -1,7 +1,7 @@
 <?php
 
-use common\bundles\app\AppBundle;
-use common\helpers\Html;
+use WolfpackIT\oauth\bundles\oauth\AssetBundle;
+use yii\helpers\Html;
 use yii\web\View;
 
 /**
@@ -9,7 +9,7 @@ use yii\web\View;
  * @var string $content
  */
 
-AppBundle::register($this);
+AssetBundle::register($this);
 
 ?>
 

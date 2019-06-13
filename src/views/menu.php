@@ -1,8 +1,9 @@
 <?php
 
-use oauth\components\User as UserComponent;
 use yii\bootstrap4\Nav;
 use yii\bootstrap4\NavBar;
+use yii\helpers\ArrayHelper;
+use yii\web\User as UserComponent;
 use yii\web\View;
 
 /**
@@ -25,14 +26,14 @@ $items = [
 ];
 
 if ($userComponent->isGuest) {
-    $items = \yii\helpers\ArrayHelper::merge(
+    $items = ArrayHelper::merge(
         $items,
         [
             ['label' => \Yii::t('app', 'Login'), 'url' => $userComponent->loginUrl],
         ]
     );
 } else {
-    $items = \yii\helpers\ArrayHelper::merge(
+    $items = ArrayHelper::merge(
         $items,
         [
             [

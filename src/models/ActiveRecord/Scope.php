@@ -3,8 +3,8 @@
 namespace WolfpackIT\oauth\models\activeRecord;
 
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
+use WolfpackIT\oauth\models\ActiveRecord;
 use WolfpackIT\oauth\traits\IdentifiableTrait;
-use yii\db\ActiveRecord;
 
 /**
  * Class Scope

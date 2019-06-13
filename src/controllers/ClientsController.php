@@ -2,18 +2,18 @@
 
 namespace WolfpackIT\oauth\controllers;
 
-use common\components\User as UserComponent;
-use common\exceptions\ForbiddenPermissionHttpException;
-use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\Permission;
-use oauth\models\form\clients\GrantTypes;
-use oauth\models\form\clients\Redirects;
-use oauth\models\form\clients\Scopes;
-use oauth\models\search\Client as ClientSearch;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\form\clients\GrantTypes;
+use WolfpackIT\oauth\models\form\clients\Redirects;
+use WolfpackIT\oauth\models\form\clients\Scopes;
+use WolfpackIT\oauth\models\search\Client as ClientSearch;
+use WolfpackIT\oauth\Module;
 use yii\base\Security;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
+use yii\web\ForbiddenHttpException;
 use yii\web\Request;
+use yii\web\User as UserComponent;
 
 /**
  * Class ClientsController
@@ -28,12 +28,14 @@ class ClientsController extends Controller
         UserComponent $user,
         Security $security
     ) {
+        /** @var Module $module */
+        $module = $this->module;
         $model = new Client([
             'scenario' => Client::SCENARIO_CREATE
         ]);
 
-        if (!$user->can(Permission::PERMISSION_CREATE, $model)) {
-            throw new ForbiddenPermissionHttpException(Permission::PERMISSION_CREATE);
+        if (!$user->can($module->clientCreatePermission, $model)) {
+            throw new ForbiddenHttpException(\Yii::t('oauth', 'You do not have permission to {permission}', ['permission' => $module->clientCreatePermission]));
         }
 
         $model->identifier = $security->generateRandomString(16);
@@ -53,7 +55,9 @@ class ClientsController extends Controller
         Request $request,
         $id
     ) {
-        $model = $this->findClient($id, Permission::PERMISSION_DELETE);
+        /** @var Module $module */
+        $module = $this->module;
+        $model = $this->findClient($id, $module->clientDeletePermission);
 
         if ($request->isDelete) {
             $model->delete();
@@ -66,7 +70,10 @@ class ClientsController extends Controller
         Request $request,
         $id
     ) {
-        $client = $this->findClient($id, Permission::PERMISSION_WRITE);
+        /** @var Module $module */
+        $module = $this->module;
+
+        $client = $this->findClient($id, $module->clientUpdatePermission);
         $model = new GrantTypes($client);
 
         if ($request->isPut && $model->load($request->bodyParams) && $model->runInternal()) {
@@ -86,6 +93,8 @@ class ClientsController extends Controller
         Request $request,
         UserComponent $user
     ) {
+        /** @var Module $module */
+        $module = $this->module;
         $clientSearch = new ClientSearch($user);
         $clientSearch->load($request->queryParams);
         $clientDataProvider = $clientSearch->search();
@@ -95,7 +104,8 @@ class ClientsController extends Controller
             [
                 'clientSearch' => $clientSearch,
                 'clientDataProvider' => $clientDataProvider,
-                'user' => $user
+                'user' => $user,
+                'module' => $module
             ]
         );
     }

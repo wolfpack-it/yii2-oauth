@@ -1,6 +1,7 @@
 <?php
 
-use common\helpers\Html;
+use kartik\icons\Icon;
+use yii\helpers\Html;
 use yii\web\View;
 
 /**
@@ -8,9 +9,11 @@ use yii\web\View;
  * @var string $content
  */
 
+Icon::map($this);
+
 ?>
 
-<?php $this->beginContent('@frontend/views/layouts/base.php') ?>
+<?php $this->beginContent(__DIR__ . '/base.php') ?>
 
 <?= $this->render('../menu') ?>
 
@@ -20,7 +23,5 @@ use yii\web\View;
             <?= $content ?>
         </div>
     </div>
-
-<?= $this->render('../footer') ?>
 
 <?php $this->endContent() ?>

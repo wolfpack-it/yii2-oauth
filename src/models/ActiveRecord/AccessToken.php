@@ -6,10 +6,10 @@ use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
+use WolfpackIT\oauth\models\ActiveRecord;
 use WolfpackIT\oauth\queries\activeQuery\AccessTokenQuery;
 use WolfpackIT\oauth\traits\ExpirableTrait;
 use WolfpackIT\oauth\traits\IdentifiableTrait;
-use yii\db\ActiveRecord;
 
 /**
  * Class AccessToken

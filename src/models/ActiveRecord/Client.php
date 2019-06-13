@@ -2,15 +2,14 @@
 
 namespace WolfpackIT\oauth\models\activeRecord;
 
-use api\components\ClientHttpBearerAuth;
 use JCIT\behaviors\BlameableBehavior;
 use JCIT\behaviors\TimestampBehavior;
-use oauth\queries\activeQuery\ClientQuery;
-use oauth\traits\IdentifiableTrait;
-use SamIT\abac\connectors\yii2\ActiveRecordAuthorizableTrait;
 use WolfpackIT\oauth\components\AccessTokenService;
+use WolfpackIT\oauth\components\ClientHttpBearerAuth;
 use WolfpackIT\oauth\interfaces\ClientEntityInterface;
-use yii\db\ActiveRecord;
+use WolfpackIT\oauth\models\ActiveRecord;
+use WolfpackIT\oauth\queries\activeQuery\ClientQuery;
+use WolfpackIT\oauth\traits\IdentifiableTrait;
 use yii\helpers\ArrayHelper;
 use yii\validators\RangeValidator;
 use yii\validators\RegularExpressionValidator;
@@ -37,7 +36,6 @@ class Client
     extends ActiveRecord
     implements ClientEntityInterface, IdentityInterface
 {
-    use ActiveRecordAuthorizableTrait;
     use IdentifiableTrait;
 
     const SCENARIO_CREATE = 'create';

@@ -2,15 +2,15 @@
 
 namespace WolfpackIT\oauth\models\activeRecord;
 
+use WolfpackIT\oauth\models\ActiveRecord;
 use WolfpackIT\oauth\queries\activeQuery\ClientQuery;
-use yii\db\ActiveRecord;
 use yii\validators\ExistValidator;
 use yii\validators\RangeValidator;
 use yii\validators\RequiredValidator;
 
 /**
  * Class ClientGrantType
- * @package oauth\models\activeRecord
+ * @package WolfpackIT\oauth\models\activeRecord
  *
  * @property int $client_id
  * @property-read Client $client

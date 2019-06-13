@@ -1,0 +1,23 @@
+html,
+body
+{
+    height: 100%;
+}
+
+#wrap {
+    padding-top: 60px;
+    min-height: 100%;
+}
+
+#wrap > .container,
+#wrap > .container-fluid
+{
+    overflow: auto;
+    padding-bottom: 56px;
+}
+
+.page-footer {
+    position: relative;
+    margin-top: -56px;
+    clear: both;
+}

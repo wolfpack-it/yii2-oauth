@@ -2,12 +2,12 @@
 
 namespace WolfpackIT\oauth\models\activeRecord;
 
+use WolfpackIT\oauth\models\ActiveRecord;
 use WolfpackIT\oauth\queries\activeQuery\ClientQuery;
-use yii\db\ActiveRecord;
 
 /**
  * Class ClientScope
- * @package oauth\models\activeRecord
+ * @package WolfpackIT\oauth\models\activeRecord
  *
  * @property int $id
  * @property int $client_id

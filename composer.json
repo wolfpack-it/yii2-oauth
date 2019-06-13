@@ -7,6 +7,7 @@
 
         "jc-it/yii2-blameable-behavior": "^1.0.0",
         "jc-it/yii2-timestamp-behavior": "^1.0.0",
+        "kartik-v/yii2-icons": "^1.4.5",
         "league/oauth2-server": "^7.4.0",
         "lcobucci/jwt": "^3.3.1",
         "sam-it/yii2-magic": "^2.2.0",
