@@ -219,7 +219,7 @@ class Client
     /**
      * @return int
      */
-    public function getId(): int
+    public function getId(): string
     {
         return $this->id;
     }

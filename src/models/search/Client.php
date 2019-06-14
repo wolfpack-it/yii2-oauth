@@ -9,7 +9,6 @@ use yii\data\ActiveDataProvider;
 use yii\data\DataProviderInterface;
 use yii\validators\RangeValidator;
 use yii\validators\StringValidator;
-use yii\web\User;
 
 /**
  * Class Client
@@ -18,9 +17,14 @@ use yii\web\User;
 class Client extends Search
 {
     /**
+     * @var int[]
+     */
+    public $ids = [];
+
+    /**
      * @var string
      */
-    public $clientClass = ActiveRecordClient::class;
+    public $modelClass = ActiveRecordClient::class;
 
     /**
      * @var string
@@ -38,28 +42,12 @@ class Client extends Search
     public $showDeleted = false;
 
     /**
-     * @var User
-     */
-    protected $user;
-
-    /**
-     * Client constructor.
-     * @param User $user
-     * @param array $config
-     */
-    public function __construct(User $user, array $config = [])
-    {
-        $this->user = $user;
-        parent::__construct($config);
-    }
-
-    /**
      * @return DataProviderInterface
      */
     protected function getBaseDataProvider(): DataProviderInterface
     {
         return new ActiveDataProvider([
-            'query' => $this->clientClass::find(),
+            'query' => $this->modelClass::find(),
         ]);
     }
 
@@ -72,12 +60,15 @@ class Client extends Search
         /** @var ClientQuery $query */
         $query = $dataProvider->query;
 
+        // No filter where since we want to limit the possible results to the given ids
+        $query->andWhere(['id' => $this->ids]);
+
         //Check whether name is empty since the andFilterWhere won't detect it since we are adding the %
         if (!$this->showDeleted) {
             $query->notDeleted();
         }
         if (!empty($this->name)) {
-            $query->andWhere(['like', 'name', $this->name . '%', false]);
+            $query->andWhere(['like', 'name', $this->name]);
         }
         $query->andFilterWhere(['status' => $this->status]);
 

@@ -1,8 +1,9 @@
 <?php
 
-use common\widgets\ActiveForm;
-use common\widgets\Form;
-use oauth\models\activeRecord\Client;
+use kartik\form\ActiveForm;
+use kartik\builder\Form;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use yii\helpers\Html;
 use yii\web\View;
 
 /**
@@ -17,7 +18,7 @@ $this->title =
 ;
 
 $form = ActiveForm::begin([
-    'method' => $model->isNewRecord ? 'post' : 'put'
+    'method' => $model->isNewRecord ? 'post' : 'put',
 ]);
 
 echo Form::widget([
@@ -36,16 +37,16 @@ echo Form::widget([
         'status' => [
             'type' => Form::INPUT_DROPDOWN_LIST,
             'items' => $model->statusOptions()
+        ],
+        'actions' => [
+            'type' => Form::INPUT_RAW,
+            'value' =>
+                Html::beginTag('div', ['class' => ['text-right']]) .
+                Html::submitButton(\Yii::t('oauth', 'Save'), ['class' => ['btn', 'btn-primary']]) .
+                Html::endTag('div')
         ]
     ],
-    'buttons' => [
-        [
-            'content' => \Yii::t('app', 'Save'),
-            'type' => 'submit',
-            'class' => ['btn', 'btn-primary']
-        ]
-    ]
 ]);
 
-ActiveForm::end();
+$form::end();
 

@@ -1,10 +1,11 @@
 <?php
 
-use common\helpers\Html;
-use common\widgets\ActiveForm;
-use common\widgets\Form;
-use oauth\models\activeRecord\Client;
-use oauth\models\form\clients\Redirects;
+use kartik\form\ActiveForm;
+use kartik\builder\Form;
+use unclead\multipleinput\MultipleInput;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\form\clients\Redirects;
+use yii\helpers\Html;
 use yii\web\View;
 
 /**
@@ -13,9 +14,9 @@ use yii\web\View;
  * @var Redirects $model
  */
 
-$this->title = \Yii::t('app','Update redirects of {clientName}', ['clientName' => $client->name]);
+$this->title = \Yii::t('oauth','Update redirects of {clientName}', ['clientName' => $client->name]);
 
-echo Html::tag('p', \Yii::t('app', 'Update the set of redirects the client is allowed to use.'));
+echo Html::tag('p', \Yii::t('oauth', 'Update the set of redirects the client is allowed to use.'));
 
 $form = ActiveForm::begin([
     'method' => 'put'
@@ -27,20 +28,20 @@ echo Form::widget([
     'attributes' => [
         'redirects' => [
             'type' => Form::INPUT_WIDGET,
-            'widgetClass' => \unclead\multipleinput\MultipleInput::class,
+            'widgetClass' => MultipleInput::class,
             'options' => [
                 'enableError' => true,
             ]
+        ],
+        'actions' => [
+            'type' => Form::INPUT_RAW,
+            'value' =>
+                Html::beginTag('div', ['class' => ['text-right']]) .
+                Html::submitButton(\Yii::t('oauth', 'Save'), ['class' => ['btn', 'btn-primary']]) .
+                Html::endTag('div')
         ]
     ],
-    'buttons' => [
-        [
-            'content' => \Yii::t('app', 'Save'),
-            'type' => 'submit',
-            'class' => ['btn', 'btn-primary']
-        ]
-    ]
 ]);
 
-ActiveForm::end();
+$form::end();
 

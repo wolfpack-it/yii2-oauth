@@ -13,5 +13,5 @@ interface ClientEntityInterface extends LeagueClientEntityInterface
     /**
      * @return int
      */
-    public function getId(): int;
+    public function getId(): string;
 }

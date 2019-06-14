@@ -1,6 +1,6 @@
 <?php
 
-namespace oauth\components\repository;
+namespace WolfpackIT\oauth\components\repository;
 
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;

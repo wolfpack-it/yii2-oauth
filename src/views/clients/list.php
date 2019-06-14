@@ -40,10 +40,8 @@ echo GridView::widget([
         [
             'class' => \yii\grid\ActionColumn::class,
             'template' => '{update} {redirects} {grantTypes} {scopes} {delete}',
-            'headerOptions' => [
-                'style' => [
-                    'width' => '124px'
-                ]
+            'contentOptions' => [
+                'class' => ['text-center']
             ],
             'buttons' => [
                 'update' => function ($url, $model, $key) {

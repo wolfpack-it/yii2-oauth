@@ -7,6 +7,7 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use WolfpackIT\oauth\components\Repository;
+use WolfpackIT\oauth\interfaces\ClientEntityInterface as WolfpackITClientEntityInterface;
 use WolfpackIT\oauth\interfaces\UserEntityInterface;
 use WolfpackIT\oauth\models\activeRecord\AccessToken;
 use WolfpackIT\oauth\models\activeRecord\Client;
@@ -111,7 +112,7 @@ class AccessTokenRepository
      * @param Client $client
      * @return int
      */
-    public function revokeAllAccessTokensForUserAndClient(UserEntityInterface $userEntity, ClientEntityInterface $client): int
+    public function revokeAllAccessTokensForUserAndClient(UserEntityInterface $userEntity, WolfpackITClientEntityInterface $client): int
     {
         return $this->modelClass::updateAll(
             ['status' => AccessToken::STATUS_REVOKED],

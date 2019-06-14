@@ -2,10 +2,10 @@
 
 namespace WolfpackIT\oauth\models\form\clients;
 
-use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\ClientScope;
-use oauth\models\activeRecord\Scope;
-use oauth\models\Form;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\activeRecord\ClientScope;
+use WolfpackIT\oauth\models\activeRecord\Scope;
+use WolfpackIT\oauth\models\Form;
 use yii\helpers\ArrayHelper;
 use yii\validators\DefaultValueValidator;
 use yii\validators\RangeValidator;

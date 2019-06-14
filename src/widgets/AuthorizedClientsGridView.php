@@ -1,16 +1,17 @@
 <?php
 
-namespace oauth\widgets;
+namespace WolfpackIT\oauth\widgets;
 
-use common\helpers\Html;
-use common\models\activeRecord\Permission;
-use common\objects\ActionColumn;
-use common\widgets\GridView;
-use oauth\components\repository\ScopeRepository;
-use oauth\models\activeRecord\Client as OAuthActiveRecordClient;
-use oauth\models\activeRecord\User as OAuthActiveRecordUser;
+use kartik\icons\Icon;
+use WolfpackIT\oauth\components\repository\ScopeRepository;
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\Module;
 use yii\base\InvalidConfigException;
+use yii\grid\ActionColumn;
+use yii\grid\GridView;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Html;
 
 /**
  * Class AuthorizedClientsGridView
@@ -18,10 +19,19 @@ use yii\helpers\ArrayHelper;
  */
 class AuthorizedClientsGridView extends GridView
 {
-    /** @var ScopeRepository */
+    /**
+     * @var Module
+     */
+    protected $module;
+
+    /**
+     * @var ScopeRepository
+     */
     public $scopeRepository;
 
-    /** @var OAuthActiveRecordUser */
+    /**
+     * @var UserEntityInterface
+     */
     public $targetUser;
 
     public function init()
@@ -30,15 +40,17 @@ class AuthorizedClientsGridView extends GridView
             throw new InvalidConfigException('ScopeRepository must be instance of ' . ScopeRepository::class);
         }
 
-        if (!$this->targetUser instanceof OAuthActiveRecordUser) {
-            throw new InvalidConfigException('targetUser must be instance of ' . OAuthActiveRecordUser::class);
+        if (!$this->targetUser instanceof UserEntityInterface) {
+            throw new InvalidConfigException('targetUser must be instance of ' . UserEntityInterface::class);
         }
+
+        $this->module = Module::getInstance();
 
         $this->columns = [
             'name',
             [
-                'label' => \Yii::t('app', 'Allowed scopes'),
-                'value' => function(OAuthActiveRecordClient $client) {
+                'label' => \Yii::t('oauth', 'Allowed scopes'),
+                'value' => function(Client $client) {
                     return Html::ul(ArrayHelper::getColumn($this->scopeRepository->getAuthorizedScopesForUserAndClient($this->targetUser, $client), 'name'));
                 },
                 'format' => 'html'
@@ -46,22 +58,25 @@ class AuthorizedClientsGridView extends GridView
             [
                 'class' => ActionColumn::class,
                 'template' => '{revoke}',
+                'contentOptions' => [
+                    'class' => ['text-center']
+                ],
                 'buttons' => [
-                    'revoke' => function ($url, OAuthActiveRecordClient $model, $key) {
-                        $title = \Yii::t('app', 'Remove app');
+                    'revoke' => function ($url, Client $model, $key) {
+                        $title = \Yii::t('oauth', 'Remove app');
                         $options = [
                             'title' => $title,
                             'aria-label' => $title,
                             'data-pjax' => '0',
                             'data-method' => 'delete',
-                            'data-confirm' => \Yii::t('app', 'Are you sure you want to remove {clientName}?', ['clientName' => $model->name])
+                            'data-confirm' => \Yii::t('oauth', 'Are you sure you want to remove {clientName}?', ['clientName' => $model->name])
                         ];
-                        return Html::a(Html::icon(Html::ICON_DELETE), ['/users/revoke-client', 'id' => $this->targetUser->id, 'clientId' => $model->id], $options);
+                        return Html::a(Icon::show('trash'), ['users/revoke-client', 'id' => $this->targetUser->getId(), 'clientId' => $model->id], $options);
                     }
                 ],
                 'visibleButtons' => [
                     'update' => function($model, $key, $index) {
-                        return \Yii::$app->user->can(Permission::PERMISSION_WRITE, $this->targetUser);
+                        return $this->module->user->can($this->module->userWritePermission, $this->targetUser);
                     },
                 ]
             ]

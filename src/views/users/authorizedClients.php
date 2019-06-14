@@ -1,27 +1,25 @@
 <?php
 
-use common\models\activeRecord\User as ActiveRecordUser;
-use oauth\components\repository\ScopeRepository;
-use oauth\models\activeRecord\User as OAuthActiveRecordUser;
-use oauth\models\search\Client;
+use WolfpackIT\oauth\components\repository\ScopeRepository;
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\widgets\AuthorizedClientsGridView;
 use yii\data\DataProviderInterface;
 use yii\web\View;
 
 /**
  * @var View $this
- * @var ActiveRecordUser $userModel
+ * @var UserEntityInterface $userModel
  * @var Client $filterModel
  * @var DataProviderInterface $dataProvider
  * @var ScopeRepository $scopeRepository
  */
 
-$this->title = \Yii::t('app', 'My apps');
+$this->title = \Yii::t('oauth', 'Clients for {user}', ['user' => $userModel->{$userModel->displayAttribute()}]);
 
-$oauthUser = OAuthActiveRecordUser::findOne(['id' => $userModel->id]);
-
-echo \oauth\widgets\AuthorizedClientsGridView::widget([
+echo AuthorizedClientsGridView::widget([
     'filterModel' => $filterModel,
     'dataProvider' => $dataProvider,
     'scopeRepository' => $scopeRepository,
-    'targetUser' => $oauthUser
+    'targetUser' => $userModel
 ]);

@@ -76,6 +76,21 @@ class Module extends YiiModule
      */
     public $userClass;
 
+    /**
+     * @var string
+     */
+    public $userListPermission = 'list';
+
+    /**
+     * @var string
+     */
+    public $userViewPermission = 'view';
+
+    /**
+     * @var string
+     */
+    public $userWritePermission = 'write';
+
     public function init()
     {
         if (!$this->userClass) {

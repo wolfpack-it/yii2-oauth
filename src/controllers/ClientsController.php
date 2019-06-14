@@ -21,7 +21,15 @@ use yii\web\User as UserComponent;
  */
 class ClientsController extends Controller
 {
+    /**
+     * @var string
+     */
     public $defaultAction = 'list';
+
+    /**
+     * @var string
+     */
+    public $modelClass = Client::class;
 
     public function actionCreate(
         Request $request,
@@ -30,7 +38,8 @@ class ClientsController extends Controller
     ) {
         /** @var Module $module */
         $module = $this->module;
-        $model = new Client([
+        /** @var Client $model */
+        $model = new $this->modelClass([
             'scenario' => Client::SCENARIO_CREATE
         ]);
 
@@ -40,7 +49,7 @@ class ClientsController extends Controller
 
         $model->identifier = $security->generateRandomString(16);
         if ($request->isPost && $model->load($request->bodyParams) && $model->save()) {
-            return $this->redirect(['/clients/list']);
+            return $this->redirect(['clients/list']);
         }
 
         return $this->render(
@@ -63,7 +72,7 @@ class ClientsController extends Controller
             $model->delete();
         }
 
-        return $this->redirect(['/clients/list']);
+        return $this->redirect(['clients/list']);
     }
 
     public function actionGrantTypes(
@@ -74,10 +83,10 @@ class ClientsController extends Controller
         $module = $this->module;
 
         $client = $this->findClient($id, $module->clientUpdatePermission);
-        $model = new GrantTypes($client);
+        $model = \Yii::createObject(GrantTypes::class, [$client]);
 
         if ($request->isPut && $model->load($request->bodyParams) && $model->runInternal()) {
-            return $this->redirect(['/clients/list']);
+            return $this->redirect(['clients/list']);
         }
 
         return $this->render(
@@ -95,7 +104,7 @@ class ClientsController extends Controller
     ) {
         /** @var Module $module */
         $module = $this->module;
-        $clientSearch = new ClientSearch($user);
+        $clientSearch = \Yii::createObject(ClientSearch::class);
         $clientSearch->load($request->queryParams);
         $clientDataProvider = $clientSearch->search();
 
@@ -114,11 +123,14 @@ class ClientsController extends Controller
         Request $request,
         $id
     ) {
-        $client = $this->findClient($id, Permission::PERMISSION_WRITE);
+        /** @var Module $module */
+        $module = $this->module;
+
+        $client = $this->findClient($id, $module->clientUpdatePermission);
         $model = new Redirects($client);
 
         if ($request->isPut && $model->load($request->bodyParams) && $model->runInternal()) {
-            return $this->redirect(['/clients/list']);
+            return $this->redirect(['clients/list']);
         }
 
         return $this->render(
@@ -134,11 +146,14 @@ class ClientsController extends Controller
         Request $request,
         $id
     ) {
-        $client = $this->findClient($id, Permission::PERMISSION_WRITE);
+        /** @var Module $module */
+        $module = $this->module;
+
+        $client = $this->findClient($id, $module->clientUpdatePermission);
         $model = new Scopes($client);
 
         if ($request->isPut && $model->load($request->bodyParams) && $model->runInternal()) {
-            return $this->redirect(['/clients/list']);
+            return $this->redirect(['clients/list']);
         }
 
         return $this->render(
@@ -154,11 +169,14 @@ class ClientsController extends Controller
         Request $request,
         int $id
     ) {
-        $model = $this->findClient($id, Permission::PERMISSION_WRITE);
+        /** @var Module $module */
+        $module = $this->module;
+
+        $model = $this->findClient($id, $module->clientUpdatePermission);
         $model->scenario = Client::SCENARIO_UPDATE;
 
         if ($request->isPut && $model->load($request->bodyParams) && $model->save()) {
-            return $this->redirect(['/clients/list']);
+            return $this->redirect(['clients/list']);
         }
 
         return $this->render(
@@ -196,8 +214,11 @@ class ClientsController extends Controller
         );
     }
 
-    protected function findClient($id, $permission = Permission::PERMISSION_ADMINISTER): ?Client
+    protected function findClient($id, $permission = null): ?Client
     {
-        return parent::findModel(Client::class, $id, $permission);
+        /** @var Module $module */
+        $module = $this->module;
+        $permission = $permission ?? $module->defaultPermission;
+        return parent::findModel($this->modelClass, $id, $permission);
     }
 }

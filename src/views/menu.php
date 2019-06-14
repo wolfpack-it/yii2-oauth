@@ -1,8 +1,10 @@
 <?php
 
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
 use yii\bootstrap4\Nav;
 use yii\bootstrap4\NavBar;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Html;
 use yii\web\User as UserComponent;
 use yii\web\View;
 
@@ -12,18 +14,18 @@ use yii\web\View;
 
 /** @var UserComponent $userComponent */
 $userComponent = \Yii::$app->user;
+/** @var UserEntityInterface $identity */
+$identity = $userComponent->identity;
 
 NavBar::begin([
-    'brandLabel' => \Yii::$app->name,
+    'brandLabel' => \Yii::$app->name . Html::tag('small', \Yii::t('oauth', ' - OAuth module')),
     'brandUrl' => \Yii::$app->homeUrl,
     'options' => [
         'class' => ['bg-dark', 'navbar-dark', 'fixed-top', 'navbar-expand-lg'],
     ],
 ]);
 
-$items = [
-    ['label' => \Yii::t( 'app', 'Home'), 'url' => \Yii::$app->homeUrl],
-];
+$items = [];
 
 if ($userComponent->isGuest) {
     $items = ArrayHelper::merge(
@@ -37,20 +39,12 @@ if ($userComponent->isGuest) {
         $items,
         [
             [
-                'label' => \Yii::t('app','Clients'),
-                'url' => ['/clients']
+                'label' => \Yii::t('app','Users'),
+                'url' => ['users/list']
             ],
             [
-                'label' => $userComponent->identity->{\common\models\activeRecord\User::getUsernameAttribute()},
-                'items' => [
-                    [
-                        'label' => \Yii::t('app', 'Logout'),
-                        'url' => ['/session/delete'],
-                        'linkOptions' => [
-                            'data-method' => 'delete'
-                        ]
-                    ]
-                ]
+                'label' => \Yii::t('app','Clients'),
+                'url' => ['clients/list']
             ],
         ]
     );

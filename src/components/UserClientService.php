@@ -3,9 +3,9 @@
 namespace WolfpackIT\oauth\components;
 
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
-use oauth\components\repository\ClientRepository;
 use WolfpackIT\oauth\components\repository\AccessTokenRepository;
 use WolfpackIT\oauth\components\repository\AuthCodeRepository;
+use WolfpackIT\oauth\components\repository\ClientRepository;
 use WolfpackIT\oauth\components\repository\RefreshTokenRepository;
 use WolfpackIT\oauth\components\repository\ScopeRepository;
 use WolfpackIT\oauth\interfaces\ClientEntityInterface;
@@ -50,6 +50,7 @@ class UserClientService extends Component
      * UserClientService constructor.
      * @param AccessTokenRepository $accessTokenRepository
      * @param AuthCodeRepository $authCodeRepository
+     * @param ClientRepository $clientRepository
      * @param RefreshTokenRepository $refreshTokenRepository
      * @param ScopeRepository $scopeRepository
      * @param array $config
@@ -57,12 +58,14 @@ class UserClientService extends Component
     public function __construct(
         AccessTokenRepository $accessTokenRepository,
         AuthCodeRepository $authCodeRepository,
+        ClientRepository $clientRepository,
         RefreshTokenRepository $refreshTokenRepository,
         ScopeRepository $scopeRepository,
         array $config = []
     ) {
         $this->accessTokenRepository = $accessTokenRepository;
         $this->authCodeRepository = $authCodeRepository;
+        $this->clientRepository = $clientRepository;
         $this->refreshTokenRepository = $refreshTokenRepository;
         $this->scopeRepository = $scopeRepository;
 
