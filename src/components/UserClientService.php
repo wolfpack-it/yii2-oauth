@@ -102,7 +102,7 @@ class UserClientService extends Component
         $validAccessTokenIds = $this->accessTokenRepository->modelClass::find()->andWhere(['user_id' => $userEntity->getId(), 'client_id' => $clientEntity->getId()])->active()->select('id')->asArray()->column();
         $accessTokenScopeIds = $this->scopeRepository->accessTokenScopeClass::find()->andWhere(['access_token_id' => array_merge($validAccessTokenIdsByRefreshToken, $validAccessTokenIds)])->select('scope_id')->column();
 
-        $validAuthCodeIds = $this->authCodeRepository->modelClass::find()->andWhere(['user_id' => $this->user->id, 'client_id' => $clientEntity->getId()])->active()->select('id')->asArray()->column();
+        $validAuthCodeIds = $this->authCodeRepository->modelClass::find()->andWhere(['user_id' => $userEntity->getId(), 'client_id' => $clientEntity->getId()])->active()->select('id')->asArray()->column();
         $authCodeScopeIds = $this->scopeRepository->authCodeScopeClass::find()->andWhere(['auth_code_id' => $validAuthCodeIds])->select('scope_id')->column();
 
         return $this->scopeRepository->modelClass::findAll(['id' => array_unique(array_merge($accessTokenScopeIds, $authCodeScopeIds))]);

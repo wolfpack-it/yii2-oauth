@@ -2,7 +2,7 @@
 
 namespace WolfpackIT\oauth\controllers;
 
-use WolfpackIT\oauth\models\form\authorize\Authorize;
+use WolfpackIT\oauth\actions\oauth\AuthorizeAction;
 use yii\rest\OptionsAction;
 
 /**
@@ -18,7 +18,7 @@ class AuthorizeController extends RestController
     {
         return [
             'index' => [
-                'class' => Authorize::class
+                'class' => AuthorizeAction::class
             ],
             'options' => [
                 'class' => OptionsAction::class

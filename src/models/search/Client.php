@@ -19,7 +19,7 @@ class Client extends Search
     /**
      * @var int[]
      */
-    public $ids = [];
+    public $ids;
 
     /**
      * @var string
@@ -61,7 +61,9 @@ class Client extends Search
         $query = $dataProvider->query;
 
         // No filter where since we want to limit the possible results to the given ids
-        $query->andWhere(['id' => $this->ids]);
+        if (!is_null($this->ids)) {
+            $query->andWhere(['id' => $this->ids]);
+        }
 
         //Check whether name is empty since the andFilterWhere won't detect it since we are adding the %
         if (!$this->showDeleted) {

@@ -1,15 +1,13 @@
 <?php
 
-namespace WolfpackIT\oauth\actions;
+namespace WolfpackIT\oauth\actions\oauth;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WolfpackIT\oauth\components\AuthorizationServer;
+use WolfpackIT\oauth\actions\OAuthAction;
 use WolfpackIT\oauth\components\Request;
 use WolfpackIT\oauth\components\Response;
-use WolfpackIT\oauth\Module;
-use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\web\Request as YiiRequest;
 use yii\web\Response as YiiResponse;
@@ -18,25 +16,8 @@ use yii\web\Response as YiiResponse;
  * Class AccessTokenAction
  * @package WolfpackIT\oauth\actions
  */
-class AccessTokenAction extends Action
+class AccessTokenAction extends OAuthAction
 {
-    /**
-     * @var AuthorizationServer
-     */
-    public $authorizationServer;
-
-    public function init()
-    {
-        if (is_null($this->authorizationServer) && $this->controller->module instanceof Module) {
-            /** @var Module $module */
-            $module = $this->controller->module;
-
-            $this->authorizationServer = $module->get($module->authorizationServerComponent);
-        }
-
-        parent::init();
-    }
-
     /**
      * Required params to send: see https://oauth2.thephpleague.com/authorization-server/
      *

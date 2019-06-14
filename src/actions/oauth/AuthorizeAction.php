@@ -1,17 +1,16 @@
 <?php
 
-namespace WolfpackIT\oauth\actions;
+namespace WolfpackIT\oauth\actions\oauth;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WolfpackIT\oauth\actions\OAuthAction;
 use WolfpackIT\oauth\components\AuthorizationServer;
 use WolfpackIT\oauth\components\Request;
 use WolfpackIT\oauth\components\Response;
 use WolfpackIT\oauth\components\UserClientService;
-use WolfpackIT\oauth\controllers\AuthorizeController;
 use WolfpackIT\oauth\models\form\authorize\Authorize;
-use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\web\Request as YiiRequest;
 use yii\web\Response as YiiResponse;
@@ -22,7 +21,7 @@ use yii\web\User;
  * Class AuthorizeAction
  * @package WolfpackIT\oauth\actions
  */
-class AuthorizeAction extends Action
+class AuthorizeAction extends OAuthAction
 {
     const SESSION_AUTH_REQUEST = 'auth_request';
 
@@ -44,13 +43,17 @@ class AuthorizeAction extends Action
      * @throws InvalidConfigException
      */
     public function run(
-        AuthorizationServer $authorizationServer,
         YiiRequest $request,
         YiiResponse $response,
         Session $session,
         User $user,
         UserClientService $userClientService
     ) {
+        /** @var Request $request */
+        $request = \Yii::createObject(Request::class, [$request]);
+        /** @var Response $response */
+        $response = \Yii::createObject(Response::class, [$response]);
+
         if (!$request instanceof ServerRequestInterface) {
             throw new InvalidConfigException('The request class for the module must implement ' . ServerRequestInterface::class . ', use can use ' . Request::class . ' via DI.');
         }
@@ -63,12 +66,12 @@ class AuthorizeAction extends Action
             $authRequest = $session->get(self::SESSION_AUTH_REQUEST);
 
             if (!$authRequest) {
-                $authRequest = $authorizationServer->validateAuthorizationRequest($request);
+                $authRequest = $this->authorizationServer->validateAuthorizationRequest($request);
                 $session->set(self::SESSION_AUTH_REQUEST, $authRequest);
             }
 
             if ($user->isGuest) {
-                $user->loginRequired();
+                return $user->loginRequired();
             }
 
             $model = \Yii::createObject(Authorize::class, [$authRequest, $userClientService, $user->identity]);
@@ -83,7 +86,7 @@ class AuthorizeAction extends Action
             ) {
                 try {
                     $session->offsetUnset(self::SESSION_AUTH_REQUEST);
-                    return $authorizationServer->completeAuthorizationRequest($authRequest, $response);
+                    return $this->authorizationServer->completeAuthorizationRequest($authRequest, $response)->getResponse();
                 } catch (OAuthServerException $exception) {
                     $session->offsetUnset(self::SESSION_AUTH_REQUEST);
                     return $exception->generateHttpResponse($response);
@@ -104,7 +107,7 @@ class AuthorizeAction extends Action
 
         } catch (OAuthServerException $exception) {
             $response = $exception->generateHttpResponse($response);
-            return $response;
+            return $response->getResponse();
         } catch (\Exception $exception) {
             return $exception;
         }

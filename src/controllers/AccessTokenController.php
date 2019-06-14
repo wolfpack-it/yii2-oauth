@@ -2,7 +2,8 @@
 
 namespace WolfpackIT\oauth\controllers;
 
-use WolfpackIT\oauth\actions\AccessTokenAction;
+use WolfpackIT\oauth\actions\oauth\AccessTokenAction;
+use yii\filters\Cors;
 use yii\rest\OptionsAction;
 
 /**
@@ -36,6 +37,10 @@ class AccessTokenController extends RestController
         $result['authenticator']['optional'] = [
             'index',
             'options'
+        ];
+
+        $result['cors'] = [
+            'class' => Cors::class,
         ];
 
         return $result;
