@@ -2,6 +2,15 @@
 
 namespace WolfpackIT\oauth;
 
+use DateInterval;
+use League\OAuth2\Server\CryptKey;
+use WolfpackIT\oauth\components\AuthorizationServer;
+use WolfpackIT\oauth\components\repository\AccessTokenRepository;
+use WolfpackIT\oauth\components\repository\AuthCodeRepository;
+use WolfpackIT\oauth\components\repository\ClientRepository;
+use WolfpackIT\oauth\components\repository\RefreshTokenRepository;
+use WolfpackIT\oauth\components\repository\ScopeRepository;
+use WolfpackIT\oauth\components\repository\UserRepository;
 use WolfpackIT\oauth\interfaces\UserEntityInterface;
 use yii\base\InvalidConfigException;
 use yii\base\Module as YiiModule;
@@ -46,9 +55,26 @@ class Module extends YiiModule
     public $db = 'db';
 
     /**
+     * @var DateInterval
+     */
+    public $defaultAccessTokenTtl;
+
+    /**
      * @var string
      */
     public $defaultPermission = 'write';
+
+    /**
+     * @var DateInterval
+     */
+    public $defaultRefreshTokenTtl;
+
+    /**
+     * Random string used to encrypt
+     *
+     * @var string|CryptKey
+     */
+    public $encryptionKey;
 
     /**
      * @var array
@@ -72,6 +98,13 @@ class Module extends YiiModule
     public $params;
 
     /**
+     * Path to private key file, can use alias
+     *
+     * @var string
+     */
+    public $privateKey;
+
+    /**
      * @var string;
      */
     public $userClass;
@@ -91,6 +124,96 @@ class Module extends YiiModule
      */
     public $userWritePermission = 'write';
 
+    /**
+     * @var string
+     */
+    public $authorizationServerComponent = 'authorizationServer';
+
+    /**
+     * @var string|array|AuthorizationServer
+     */
+    public $authorizationServer;
+
+    protected function createAuthorizationServer(): AuthorizationServer
+    {
+        /** @var ClientRepository $clientRepository */
+        $clientRepository = \Yii::createObject(ClientRepository::class);
+        /** @var ScopeRepository $scopeRepository */
+        $scopeRepository = \Yii::createObject(ScopeRepository::class);
+        /** @var AccessTokenRepository $accessTokenRepository */
+        $accessTokenRepository = \Yii::createObject(AccessTokenRepository::class);
+        /** @var AuthCodeRepository $authCodeRepository */
+        $authCodeRepository = \Yii::createObject(AuthCodeRepository::class);
+        /** @var RefreshTokenRepository $refreshTokenRepository */
+        $refreshTokenRepository = \Yii::createObject(RefreshTokenRepository::class);
+        /** @var UserRepository $userRepository */
+        $userRepository = \Yii::createObject(UserRepository::class, [['modelClass' => $this->userClass]]);
+
+        $authorizationServer = new AuthorizationServer(
+            $clientRepository,
+            $accessTokenRepository,
+            $scopeRepository,
+            $this->privateKey,
+            $this->encryptionKey
+        );
+
+        //Get more information about which grant types to use for what cases here: https://oauth2.thephpleague.com/authorization-server/which-grant/
+
+        //ClientCredentialsGrant config
+        $authorizationServer->enableGrantType(
+            new \League\OAuth2\Server\Grant\ClientCredentialsGrant(),
+            $this->defaultAccessTokenTtl
+        );
+
+        //PasswordGrant config
+        $passwordGrant = new \League\OAuth2\Server\Grant\PasswordGrant(
+            $userRepository,
+            $refreshTokenRepository
+        );
+        $passwordGrant->setRefreshTokenTTL($this->defaultRefreshTokenTtl);
+        $authorizationServer->enableGrantType(
+            $passwordGrant,
+            $this->defaultAccessTokenTtl
+        );
+
+        //AuthCodeGrant config
+        $authCodeGrant = new \League\OAuth2\Server\Grant\AuthCodeGrant(
+            $authCodeRepository,
+            $refreshTokenRepository,
+            $this->defaultAccessTokenTtl
+        );
+        $authCodeGrant->setRefreshTokenTTL($this->defaultRefreshTokenTtl);
+        $authorizationServer->enableGrantType(
+            $authCodeGrant,
+            $this->defaultAccessTokenTtl
+        );
+
+        //ImplicitGrant
+        $implicitGrant = new \League\OAuth2\Server\Grant\ImplicitGrant(
+            $this->defaultAccessTokenTtl
+        );
+        $authorizationServer->enableGrantType(
+            $implicitGrant,
+            $this->defaultAccessTokenTtl
+        );
+
+        //RefreshTokenGrant config
+        $refreshTokenGrand = new \League\OAuth2\Server\Grant\RefreshTokenGrant(
+            $refreshTokenRepository
+        );
+        $refreshTokenGrand->setRefreshTokenTTL($this->defaultRefreshTokenTtl);
+        $authorizationServer->enableGrantType(
+            $refreshTokenGrand,
+            $this->defaultAccessTokenTtl
+        );
+
+        $this->setComponents([
+            $this->authorizationServerComponent => $authorizationServer
+        ]);
+
+        return $authorizationServer;
+    }
+
     public function init()
     {
         if (!$this->userClass) {
@@ -105,6 +228,14 @@ class Module extends YiiModule
 
         $this->module->params = ArrayHelper::merge($this->module->params, $this->params);
 
+        $this->defaultAccessTokenTtl = $this->defaultAccessTokenTtl ?? new DateInterval('PT1H');
+        $this->defaultRefreshTokenTtl = $this->defaultRefreshTokenTtl ?? new DateInterval('P10Y');
+
+        if (!$this->privateKey instanceof CryptKey) {
+            $this->privateKey = is_string($this->privateKey) && $this->module->has($this->privateKey) ? $this->module->get($this->privateKey) : \Yii::createObject($this->privateKey);
+        }
+        $this->initAuthorizationServer();
+
         parent::init();
     }
 
@@ -115,5 +246,16 @@ class Module extends YiiModule
     public function getDb(): Connection
     {
         return $this->get($this->db);
+    }
+
+    public function initAuthorizationServer()
+    {
+        if(is_null($this->authorizationServer)) {
+            $this->authorizationServer = $this->createAuthorizationServer();
+        }
+
+        if (!$this->authorizationServer instanceof AuthorizationServer) {
+            $this->authorizationServer = is_string($this->authorizationServer) && $this->module->has($this->authorizationServer) ? $this->module->get($this->authorizationServer) : \Yii::createObject($this->authorizationServer);
+        }
     }
 }

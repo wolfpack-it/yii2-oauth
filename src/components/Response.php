@@ -13,13 +13,47 @@ use yii\web\Response as YiiResponse;
  * @package WolfpackIT\oauth\components
  */
 class Response
-    extends YiiResponse
     implements ResponseInterface
 {
+    /**
+     * @var YiiResponse
+     */
+    protected $response;
+
+    /**
+     * Response constructor.
+     * @param YiiResponse $response
+     */
+    public function __construct(YiiResponse $response)
+    {
+        $this->response = $response;
+    }
+
+    public function getResponse(): YiiResponse
+    {
+        return $this->response;
+    }
+
+    /**
+     * @return array|\string[][]
+     */
+    public function getHeaders()
+    {
+        return $this->response->headers->toArray();
+    }
+
     public function getProtocolVersion()
     {
         throw new \Exception('Not implemented yet');
         // TODO: Implement getProtocolVersion() method.
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatusCode()
+    {
+        return $this->response->statusCode;
     }
 
     public function withProtocolVersion($version)
@@ -53,7 +87,7 @@ class Response
      */
     public function withHeader($name, $value)
     {
-        $this->headers->set($name, $value);
+        $this->response->headers->set($name, $value);
         return $this;
     }
 
@@ -86,8 +120,8 @@ class Response
 
     public function withStatus($code, $reasonPhrase = '')
     {
-        $this->statusCode = $code;
-        $this->statusText = $reasonPhrase;
+        $this->response->statusCode = $code;
+        $this->response->statusText = $reasonPhrase;
         return $this;
     }
 
@@ -102,7 +136,7 @@ class Response
      */
     public function write($content)
     {
-        $this->data = json_decode($content, true);
+        $this->response->data = json_decode($content, true);
         return $this;
     }
 }

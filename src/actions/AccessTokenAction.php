@@ -8,6 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use WolfpackIT\oauth\components\AuthorizationServer;
 use WolfpackIT\oauth\components\Request;
 use WolfpackIT\oauth\components\Response;
+use WolfpackIT\oauth\Module;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\web\Request as YiiRequest;
@@ -20,19 +21,37 @@ use yii\web\Response as YiiResponse;
 class AccessTokenAction extends Action
 {
     /**
+     * @var AuthorizationServer
+     */
+    public $authorizationServer;
+
+    public function init()
+    {
+        if (is_null($this->authorizationServer) && $this->controller->module instanceof Module) {
+            /** @var Module $module */
+            $module = $this->controller->module;
+
+            $this->authorizationServer = $module->get($module->authorizationServerComponent);
+        }
+
+        parent::init();
+    }
+
+    /**
      * Required params to send: see https://oauth2.thephpleague.com/authorization-server/
      *
-     * @param AuthorizationServer $authorizationServer
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
+     * @param YiiRequest $request
+     * @param YiiResponse $response
      * @return \Exception|OAuthServerException|mixed|ResponseInterface
      * @throws InvalidConfigException
      */
     public function run(
-        AuthorizationServer $authorizationServer,
         YiiRequest $request,
         YiiResponse $response
     ) {
+        $request = \Yii::createObject(Request::class, [$request]);
+        $response = \Yii::createObject(Response::class, [$response]);
+
         if (!$request instanceof ServerRequestInterface) {
             throw new InvalidConfigException('The request class for the module must implement ' . ServerRequestInterface::class . ', use can use ' . Request::class . ' via DI.');
         }
@@ -42,9 +61,9 @@ class AccessTokenAction extends Action
         }
 
         try {
-            $authorizationServer->respondToAccessTokenRequest($request, $response);
+            $this->authorizationServer->respondToAccessTokenRequest($request, $response);
             //Since the default response format is json, json decode it so content negotiation works
-            return json_decode($response->content);
+            return json_decode($response->getResponse()->content);
         } catch (OAuthServerException $exception) {
             return $exception->generateHttpResponse($response);
         } catch (\Exception $exception) {

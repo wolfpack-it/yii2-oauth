@@ -2,7 +2,7 @@
 
 namespace WolfpackIT\oauth\components;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use yii\web\Request as YiiRequest;
@@ -14,19 +14,38 @@ use yii\web\Request as YiiRequest;
  * @package WolfpackIT\oauth\components
  */
 class Request
-    extends YiiRequest
-    implements RequestInterface
+    implements ServerRequestInterface
 {
+    /**
+     * @var
+     */
+    protected $request;
+
+    public function __construct(YiiRequest $request)
+    {
+        $this->request = $request;
+    }
+
+    /**
+     * @return YiiRequest
+     */
+    public function getRequest(): YiiRequest
+    {
+        return $this->request;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMethod()
+    {
+        return $this->request->method;
+    }
+
     public function getProtocolVersion()
     {
         throw new \Exception('Not implemented yet');
         // TODO: Implement getProtocolVersion() method.
-    }
-
-    public function withProtocolVersion($version)
-    {
-        throw new \Exception('Not implemented yet');
-        // TODO: Implement withProtocolVersion() method.
     }
 
     /**
@@ -35,7 +54,7 @@ class Request
      */
     public function hasHeader($name)
     {
-        return $this->headers->offsetExists($name);
+        return $this->request->headers->offsetExists($name);
     }
 
     /**
@@ -44,14 +63,27 @@ class Request
      */
     public function getHeader($name)
     {
-        $result = $this->headers->get($name);
+        $result = $this->request->headers->get($name);
         return is_array($result) ? $result : [$result];
+    }
+
+    /**
+     * @return array|string[][]
+     */
+    public function getHeaders()
+    {
+        return $this->request->headers->toArray();
     }
 
     public function getHeaderLine($name)
     {
         throw new \Exception('Not implemented yet');
         // TODO: Implement getHeaderLine() method.
+    }
+
+    public function getQueryParams()
+    {
+        return $this->request->queryParams;
     }
 
     public function withHeader($name, $value)
@@ -154,7 +186,7 @@ class Request
 
     public function getParsedBody()
     {
-        return $this->bodyParams;
+        return $this->request->bodyParams;
     }
 
     public function withParsedBody($data)
@@ -179,6 +211,12 @@ class Request
     {
         throw new \Exception('Not implemented yet');
         // TODO: Implement withAttribute() method.
+    }
+
+    public function withProtocolVersion($version)
+    {
+        throw new \Exception('Not implemented yet');
+        // TODO: Implement withProtocolVersion() method.
     }
 
     public function withoutAttribute($name)
