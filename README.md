@@ -32,14 +32,16 @@ The basic configuration is a module in your application:
 'modules' => [
     'oauth' => [
         'class' => \WolfpackIT\oauth\Module::class,
-        'userClass' => <class of ActiveRecordUser implementing UserEntityInterface>,
+        'userClass' => '<class of ActiveRecordUser implementing UserEntityInterface>',
         'db' => 'db', // component that should be used for the database connection
-        'publicKey' => <path to public key file te be used by CryptKey, or configuration>,
-        'privateKey' => <path to private key file te be used by CryptKey, or configuration>,
-        'encryptionKey' => <random string for encryption>,
+        'publicKey' => '<path to public key file te be used by CryptKey, or configuration>',
+        'privateKey' => '<path to private key file te be used by CryptKey, or configuration>',
+        'encryptionKey' => '<random string for encryption>',
     ]
 ]
 ```
+
+See the public variables of the [Module](https://github.com/wolfpack-it/yii2-oauth/blob/master/src/Module.php) for the full configuration options.
 
 An example on how to generate keys can be found [here](https://oauth2.thephpleague.com/installation/).
 
