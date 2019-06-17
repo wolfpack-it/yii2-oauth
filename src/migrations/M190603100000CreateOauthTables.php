@@ -2,10 +2,22 @@
 
 namespace WolfpackIT\oauth\migrations;
 
+use WolfpackIT\oauth\Module;
 use yii\db\Migration;
 
 class M190603100000CreateOauthTables extends Migration
 {
+    public function init()
+    {
+        $module = Module::getInstance();
+
+        if (!is_null($module)) {
+            $this->db = Module::getInstance()->db;
+        }
+
+        parent::init();
+    }
+
     public function safeUp()
     {
         //client table

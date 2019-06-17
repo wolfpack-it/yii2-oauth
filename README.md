@@ -24,8 +24,58 @@ to the `require` section of your `composer.json` file.
 
 ## Configuring
 
-- add module to bootstrap in order to have module ready for DI
-- add routes
+### Configure module
+
+The basic configuration is a module in your application:
+
+```php
+'modules' => [
+    'oauth' => [
+        'class' => \WolfpackIT\oauth\Module::class,
+        'userClass' => <class of ActiveRecordUser implementing UserEntityInterface>,
+        'db' => 'db', // component that should be used for the database connection
+        'publicKey' => <path to public key file te be used by CryptKey, or configuration>,
+        'privateKey' => <path to private key file te be used by CryptKey, or configuration>,
+        'encryptionKey' => <random string for encryption>,
+    ]
+]
+```
+
+An example on how to generate keys can be found [here](https://oauth2.thephpleague.com/installation/).
+
+Whenever the `AccessTokenService` is being injected via DI, the module needs to be added to the bootstrap of the application.
+
+### Running migrations
+
+The migrations can be ran automatically by adding them to the [migration namespaces](https://www.yiiframework.com/doc/guide/2.0/en/db-migrations#namespaced-migrations):
+```php
+'migrationNamespaces' => [
+    'WolfpackIT\oauth\migrations',
+    'console\migrations',
+]
+```
+
+To get this working, you will need to add an alias:
+```php
+'aliases' => [
+    '@WolfpackIT/oauth' => '@vendor/wolfpack-it/yii2-oauth/src',
+]
+```
+
+If you want to override the database connection in the migrations, you will need to bootstrap the oauth module also in the console.
+
+### Add routes
+To have the module accessible, make sure the correct routes are set in your urlManager.
+
+For example when your module is called `oauth`:
+
+```php
+'urlManager' => [
+    'rules' => [
+        'oauth/<controller:[\w-]+>/<action:[\w-]+>' => 'oauth/<controller>/<action>'
+    ]
+]
+```
 
 ## TODO
 - Add tests 
