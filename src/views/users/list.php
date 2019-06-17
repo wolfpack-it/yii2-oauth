@@ -1,12 +1,12 @@
 <?php
 
 use kartik\icons\Icon;
-use oauth\helpers\Html;
 use WolfpackIT\oauth\models\search\User as UserSearch;
 use WolfpackIT\oauth\Module;
 use yii\data\DataProviderInterface;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
+use yii\helpers\Html;
 use yii\web\User as UserComponent;
 use yii\web\View;
 

@@ -39,10 +39,6 @@ class AccessTokenController extends RestController
             'options'
         ];
 
-        $result['cors'] = [
-            'class' => Cors::class,
-        ];
-
         return $result;
     }
 }

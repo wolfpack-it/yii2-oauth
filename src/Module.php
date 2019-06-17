@@ -105,6 +105,13 @@ class Module extends YiiModule
     public $privateKey;
 
     /**
+     * Path to public key file, can use alias
+     *
+     * @var string
+     */
+    public $publicKey;
+
+    /**
      * @var string;
      */
     public $userClass;
@@ -232,8 +239,27 @@ class Module extends YiiModule
         $this->defaultRefreshTokenTtl = $this->defaultRefreshTokenTtl ?? new DateInterval('P10Y');
 
         if (!$this->privateKey instanceof CryptKey) {
-            $this->privateKey = is_string($this->privateKey) && $this->module->has($this->privateKey) ? $this->module->get($this->privateKey) : \Yii::createObject($this->privateKey);
+            if (is_string($this->privateKey) && is_file(\Yii::getAlias($this->privateKey))) {
+                $this->privateKey = \Yii::getAlias($this->privateKey);
+            } else {
+                $this->privateKey =
+                    is_string($this->privateKey) && $this->module->has($this->privateKey)
+                        ? $this->module->get($this->privateKey)
+                        : \Yii::createObject($this->privateKey);
+            }
         }
+
+        if (!$this->publicKey instanceof CryptKey) {
+            if (is_string($this->publicKey) && is_file(\Yii::getAlias($this->publicKey))) {
+                $this->publicKey = \Yii::getAlias($this->publicKey);
+            } else {
+                $this->publicKey =
+                    is_string($this->publicKey) && $this->module->has($this->publicKey)
+                        ? $this->module->get($this->publicKey)
+                        : \Yii::createObject($this->publicKey);
+            }
+        }
+        
         $this->initAuthorizationServer();
 
         parent::init();

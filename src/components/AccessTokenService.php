@@ -6,7 +6,10 @@ use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Lcobucci\JWT\Token;
 use Lcobucci\JWT\ValidationData;
+use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
+use WolfpackIT\oauth\components\repository\AccessTokenRepository;
+use WolfpackIT\oauth\Module;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\Request;
@@ -21,7 +24,12 @@ class AccessTokenService extends Component
     /**
      * @var string|array|AccessTokenRepositoryInterface
      */
-    public $accessTokenRepository = AccessTokenRepositoryInterface::class;
+    public $accessTokenRepository = AccessTokenRepository::class;
+
+    /**
+     * @var CryptKey
+     */
+    public $publicKey;
 
     /**
      * @var string
@@ -48,6 +56,12 @@ class AccessTokenService extends Component
 
         if (!isset($this->tokenHeader, $this->tokenPattern)) {
             throw new InvalidConfigException('TokenHeader and TokenPattern must be set.');
+        }
+
+        $this->publicKey = $this->publicKey ?? Module::getInstance()->publicKey;
+
+        if (!isset($this->publicKey) || !$this->publicKey instanceof CryptKey) {
+            throw new InvalidConfigException('PublicKey must be set and be instance of ' . CryptKey::class);
         }
 
         parent::init();
@@ -102,7 +116,7 @@ class AccessTokenService extends Component
             $token = (new Parser())->parse($jwt);
 
             try {
-                if ($token->verify(new Sha256(), \Yii::$app->get('oauthPublicKey')->getKeyPath()) === false) {
+                if ($token->verify(new Sha256(), $this->publicKey->getKeyPath()) === false) {
                     throw new UnauthorizedHttpException('Access token could not be verified');
                 }
             } catch (\BadMethodCallException $exception) {

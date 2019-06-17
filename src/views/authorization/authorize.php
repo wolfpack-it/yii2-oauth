@@ -3,11 +3,12 @@
 use common\helpers\Html;
 use common\widgets\ActiveForm;
 use common\widgets\Form;
-use oauth\models\activeRecord\Client;
-use oauth\models\activeRecord\Scope;
-use oauth\models\activeRecord\User;
-use oauth\models\form\authorize\Authorize;
+use WolfpackIT\oauth\interfaces\UserEntityInterface;
+use WolfpackIT\oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\activeRecord\Scope;
+use WolfpackIT\oauth\models\form\authorize\Authorize;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 use yii\web\View;
 
 /**
@@ -15,7 +16,7 @@ use yii\web\View;
  * @var Authorize $model
  * @var Client $client
  * @var Scope[] $scopes
- * @var User $identity
+ * @var UserEntityInterface $identity
  */
 
 $this->title = \Yii::t('app', 'Authorize {clientName}', ['clientName' => $client->name]);
@@ -26,11 +27,11 @@ echo Html::tag(
         'app',
         'You are logged in as {userName}.<br>{a}Click here to continue as someone else{/a}.',
         [
-            'userName' => Html::tag('strong', $identity->name),
+            'userName' => Html::tag('strong', $identity->{$identity->displayAttribute()}),
             'a' => Html::beginTag(
                 'a',
                 [
-                    'href' => \yii\helpers\Url::to(['/session/delete']),
+                    'href' => Url::to(['authorize/logout']),
                     'data-method' => 'delete'
                 ]
             ),

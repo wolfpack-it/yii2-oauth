@@ -2,7 +2,7 @@
 
 namespace WolfpackIT\oauth\components;
 
-use oauth\models\activeRecord\Client;
+use WolfpackIT\oauth\models\activeRecord\Client;
 use yii\filters\auth\HttpBearerAuth;
 use yii\web\Request;
 use yii\web\Response;

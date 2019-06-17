@@ -1,12 +1,11 @@
 <?php
 
 use kartik\icons\Icon;
-use oauth\helpers\Html;
-use oauth\models\activeRecord\Client;
 use WolfpackIT\oauth\models\search\Client as ClientSearch;
 use WolfpackIT\oauth\Module;
 use yii\data\DataProviderInterface;
 use yii\grid\GridView;
+use yii\helpers\Html;
 use yii\web\User as UserComponent;
 use yii\web\View;
 
@@ -16,12 +15,13 @@ use yii\web\View;
  * @var DataProviderInterface $clientDataProvider
  * @var UserComponent $user
  * @var Module $module
+ * @var string $modelClass
  */
 
 $this->title = \Yii::t('oauth', 'Clients');
 
 echo Html::beginTag('div', ['class' => 'text-right']);
-echo $user->can($module->clientCreatePermission, new Client())
+echo $user->can($module->clientCreatePermission, new $modelClass())
     ? Html::a(\Yii::t('oauth', 'Create'), ['clients/create'], ['class' => 'btn btn-primary', 'data-pjax' => 0])
     : '';
 echo Html::endTag('div');

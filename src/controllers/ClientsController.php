@@ -114,7 +114,8 @@ class ClientsController extends Controller
                 'clientSearch' => $clientSearch,
                 'clientDataProvider' => $clientDataProvider,
                 'user' => $user,
-                'module' => $module
+                'module' => $module,
+                'modelClass' => $this->modelClass
             ]
         );
     }
