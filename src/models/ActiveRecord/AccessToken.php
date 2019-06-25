@@ -51,7 +51,11 @@ class AccessToken
      */
     public function addScope(ScopeEntityInterface $scope): void
     {
-        $this->link('grantedScopes', $scope);
+        try {
+            $this->link('grantedScopes', $scope);
+        } catch (IntegrityException $e) {
+            //In case the link already exists
+        }
     }
 
     /**
