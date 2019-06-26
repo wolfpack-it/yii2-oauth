@@ -89,7 +89,7 @@ class AuthorizeAction extends OAuthAction
                     return $this->authorizationServer->completeAuthorizationRequest($authRequest, $response)->getResponse();
                 } catch (OAuthServerException $exception) {
                     $session->offsetUnset(self::SESSION_AUTH_REQUEST);
-                    return $exception->generateHttpResponse($response);
+                    return $exception->generateHttpResponse($response)->getResponse();
                 } catch (\Exception $exception) {
                     return $exception;
                 }

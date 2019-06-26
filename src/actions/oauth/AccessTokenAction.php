@@ -44,9 +44,9 @@ class AccessTokenAction extends OAuthAction
         try {
             $this->authorizationServer->respondToAccessTokenRequest($request, $response);
             //Since the default response format is json, json decode it so content negotiation works
-            return json_decode($response->getResponse()->content);
+            return $response->getResponse();
         } catch (OAuthServerException $exception) {
-            return $exception->generateHttpResponse($response);
+            return $exception->generateHttpResponse($response)->getResponse();
         } catch (\Exception $exception) {
             return $exception;
         }
