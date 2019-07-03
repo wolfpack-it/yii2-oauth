@@ -2,9 +2,9 @@
 
 namespace WolfpackIT\oauth\components\repository;
 
-use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use WolfpackIT\oauth\components\Repository;
+use WolfpackIT\oauth\interfaces\ClientEntityInterface;
 use WolfpackIT\oauth\models\activeRecord\Client;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
