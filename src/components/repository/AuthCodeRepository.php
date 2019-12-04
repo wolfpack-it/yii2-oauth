@@ -79,7 +79,7 @@ class AuthCodeRepository
     public function isAuthCodeRevoked($codeId): bool
     {
         $authCode = $this->findAuthCode($codeId);
-        return !is_null($authCode) && $authCode->status === AuthCode::STATUS_REVOKED;
+        return is_null($authCode) || $authCode->status === AuthCode::STATUS_REVOKED;
     }
 
     /**

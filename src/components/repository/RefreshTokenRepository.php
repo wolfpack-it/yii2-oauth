@@ -87,7 +87,7 @@ class RefreshTokenRepository
     public function isRefreshTokenRevoked($tokenId)
     {
         $refreshToken = $this->findRefreshToken($tokenId);
-        return !is_null($refreshToken) && $refreshToken->status === RefreshToken::STATUS_REVOKED;
+        return is_null($refreshToken) || $refreshToken->status === RefreshToken::STATUS_REVOKED;
     }
 
     /**

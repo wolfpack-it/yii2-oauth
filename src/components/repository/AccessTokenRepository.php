@@ -89,8 +89,8 @@ class AccessTokenRepository
      */
     public function isAccessTokenRevoked($codeId): bool
     {
-        $authCode = $this->findAccessToken($codeId);
-        return !is_null($authCode) && $authCode->status === AccessToken::STATUS_REVOKED;
+        $accessToken = $this->findAccessToken($codeId);
+        return is_null($accessToken) || $accessToken->status === AccessToken::STATUS_REVOKED;
     }
 
     /**
