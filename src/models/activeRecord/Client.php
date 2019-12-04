@@ -229,7 +229,7 @@ class Client
      */
     public function getIsConfidential(): bool
     {
-        return is_null($this->secret);
+        return !is_null($this->secret);
     }
 
     /**
