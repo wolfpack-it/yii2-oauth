@@ -84,6 +84,11 @@ class Module extends YiiModule
     ];
 
     /**
+     * @var string
+     */
+    public $implicitGrantQueryDelimiter = '#';
+
+    /**
      * Use null if the application layout should be used
      *
      * @var string
@@ -197,7 +202,8 @@ class Module extends YiiModule
 
         //ImplicitGrant
         $implicitGrant = new \League\OAuth2\Server\Grant\ImplicitGrant(
-            $this->defaultAccessTokenTtl
+            $this->defaultAccessTokenTtl,
+            $this->implicitGrantQueryDelimiter
         );
         $authorizationServer->enableGrantType(
             $implicitGrant,
@@ -205,12 +211,12 @@ class Module extends YiiModule
         );
 
         //RefreshTokenGrant config
-        $refreshTokenGrand = new \League\OAuth2\Server\Grant\RefreshTokenGrant(
+        $refreshTokenGrant = new \League\OAuth2\Server\Grant\RefreshTokenGrant(
             $refreshTokenRepository
         );
-        $refreshTokenGrand->setRefreshTokenTTL($this->defaultRefreshTokenTtl);
+        $refreshTokenGrant->setRefreshTokenTTL($this->defaultRefreshTokenTtl);
         $authorizationServer->enableGrantType(
-            $refreshTokenGrand,
+            $refreshTokenGrant,
             $this->defaultAccessTokenTtl
         );
 
