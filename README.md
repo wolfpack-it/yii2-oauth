@@ -37,6 +37,7 @@ The basic configuration is a module in your application:
         'publicKey' => '<path to public key file te be used by CryptKey, or configuration>',
         'privateKey' => '<path to private key file te be used by CryptKey, or configuration>',
         'encryptionKey' => '<random string for encryption>',
+        'tokenValidationLeeway' => null|int, // The number of seconds to use as leeway when validating access tokens
     ]
 ]
 ```

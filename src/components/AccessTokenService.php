@@ -32,6 +32,12 @@ class AccessTokenService extends Component
     public $publicKey;
 
     /**
+     * The leeway in seconds for token expiration and creation when validating
+     * @var ?int
+     */
+    public $tokenValidationLeeway;
+
+    /**
      * @var string
      */
     public $tokenHeader = 'Authorization';
@@ -59,6 +65,7 @@ class AccessTokenService extends Component
         }
 
         $this->publicKey = $this->publicKey ?? Module::getInstance()->publicKey;
+        $this->tokenValidationLeeway = $this->tokenValidationLeeway ?? Module::getInstance()->tokenValidationLeeway;
 
         if (!isset($this->publicKey) || !$this->publicKey instanceof CryptKey) {
             throw new InvalidConfigException('PublicKey must be set and be instance of ' . CryptKey::class);
@@ -123,9 +130,8 @@ class AccessTokenService extends Component
                 throw new UnauthorizedHttpException('Access token is not signed');
             }
 
-            // Ensure access token hasn't expired
-            $data = new ValidationData();
-            $data->setCurrentTime(time());
+            // Ensure access token hasn't expired, taking some leeway into account
+            $data = new ValidationData(time(), $this->tokenValidationLeeway);
 
             if ($token->validate($data) === false) {
                 throw new UnauthorizedHttpException('Access token is invalid');

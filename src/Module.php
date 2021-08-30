@@ -55,6 +55,12 @@ class Module extends YiiModule
     public $db = 'db';
 
     /**
+     * The leeway in seconds for token expiration and creation when validating
+     * @var ?int
+     */
+    public $tokenValidationLeeway;
+
+    /**
      * @var DateInterval
      */
     public $defaultAccessTokenTtl;
