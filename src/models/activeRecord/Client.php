@@ -233,6 +233,14 @@ class Client
     }
 
     /**
+     * @return bool
+     */
+    public function isConfidential(): bool
+    {
+        return !is_null($this->secret);
+    }
+
+    /**
      * @return string
      */
     public function getDisplayStatus(): string
