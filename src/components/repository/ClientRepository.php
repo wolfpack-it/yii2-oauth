@@ -35,12 +35,8 @@ class ClientRepository
         return $this->modelClass::find()
             ->active()
             ->notDeleted()
-            ->innerJoinWith(['clientGrantTypes' => function(ActiveQuery $query) use ($grantType) {
-                return $query->andFilterWhere(['grant_type' => $grantType]);
-            }])
             ->andWhere(['identifier' => $clientIdentifier])
-            ->one()
-        ;
+            ->one();
     }
 
     /**
@@ -54,7 +50,16 @@ class ClientRepository
      */
     public function validateClient($clientIdentifier, $clientSecret, $grantType)
     {
-        $client = $this->getClientEntity($clientIdentifier);
+        $client = $this->modelClass::find()
+           ->active()
+           ->notDeleted()
+           ->innerJoinWith(['clientGrantTypes' => function(ActiveQuery $query) use ($grantType) {
+               return $query->andFilterWhere(['grant_type' => $grantType]);
+           }])
+           ->andWhere(['identifier' => $clientIdentifier])
+           ->one();
+
+        $this->getClientEntity($clientIdentifier);
         if ($client === null)
             return false;
         return (

@@ -2,7 +2,9 @@
 
 namespace WolfpackIT\oauth\components;
 
-use Lcobucci\JWT\Parser;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Encoding\JoseEncoder;
+use Lcobucci\JWT\Token\Parser;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Lcobucci\JWT\Token;
 use Lcobucci\JWT\ValidationData;
@@ -120,7 +122,7 @@ class AccessTokenService extends Component
     public function getAndValidateToken($jwt): Token
     {
         try {
-            $token = (new Parser())->parse($jwt);
+            $token = (new Parser(new JoseEncoder()))->parse($jwt);
 
             try {
                 if ($token->verify(new Sha256(), $this->publicKey->getKeyPath()) === false) {
