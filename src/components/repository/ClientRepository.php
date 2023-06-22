@@ -23,20 +23,16 @@ class ClientRepository
     public $modelClass = Client::class;
 
     /**
-     * @param string $clientIdentifier
-     * @param null $grantType
-     * @param null $clientSecret
-     * @param bool $mustValidateSecret
-     * @return Client|null
+     * Get a client.
+     *
+     * @param string $clientIdentifier The client's identifier
+     *
+     * @return \League\OAuth2\Server\Entities\ClientEntityInterface|null
      */
-    public function getClientEntity(
-        $clientIdentifier,
-        $grantType = null,
-        $clientSecret = null,
-        $mustValidateSecret = true
-    ): ?Client {
+    public function getClientEntity($clientIdentifier) : ?Client
+    {
         /** @var Client $client */
-        $client = $this->modelClass::find()
+        return $this->modelClass::find()
             ->active()
             ->notDeleted()
             ->innerJoinWith(['clientGrantTypes' => function(ActiveQuery $query) use ($grantType) {
@@ -45,18 +41,28 @@ class ClientRepository
             ->andWhere(['identifier' => $clientIdentifier])
             ->one()
         ;
+    }
 
-        if (
+    /**
+     * Validate a client's secret.
+     *
+     * @param string      $clientIdentifier The client's identifier
+     * @param null|string $clientSecret     The client's secret (if sent)
+     * @param null|string $grantType        The type of grant the client is using (if sent)
+     *
+     * @return bool
+     */
+    public function validateClient($clientIdentifier, $clientSecret, $grantType)
+    {
+        $client = $this->getClientEntity($clientIdentifier);
+        if ($client === null)
+            return false;
+        return (
             !is_null($client)
             && (
-                $mustValidateSecret === false
-                || $client->getIsConfidential() === false
+                $client->getIsConfidential() === false
                 || $client->secretVerify($clientSecret))
-        ) {
-            return $client;
-        }
-
-        return null;
+        );
     }
 
     public function init()
