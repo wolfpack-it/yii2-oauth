@@ -23,7 +23,7 @@ class Scope
     /**
      * @return string
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): ?String
     {
         return $this->getIdentifier();
     }
