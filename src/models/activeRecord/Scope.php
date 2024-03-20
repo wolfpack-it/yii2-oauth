@@ -21,7 +21,7 @@ class Scope
     use IdentifiableTrait;
 
     /**
-     * @return string
+     * @return String|null
      */
     public function jsonSerialize()
     {
