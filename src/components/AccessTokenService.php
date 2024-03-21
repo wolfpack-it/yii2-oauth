@@ -2,13 +2,12 @@
 
 namespace WolfpackIT\oauth\components;
 
+use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Configuration;
-use Lcobucci\JWT\Encoding\JoseEncoder;
-use Lcobucci\JWT\Token\Parser;
-use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Lcobucci\JWT\Token;
-use Lcobucci\JWT\ValidationData;
-use League\OAuth2\Server\CryptKey;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
+use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
+use Lcobucci\JWT\Validation\Validator;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use WolfpackIT\oauth\components\repository\AccessTokenRepository;
 use WolfpackIT\oauth\Module;
@@ -29,11 +28,6 @@ class AccessTokenService extends Component
     public $accessTokenRepository = AccessTokenRepository::class;
 
     /**
-     * @var CryptKey
-     */
-    public $publicKey;
-
-    /**
      * The leeway in seconds for token expiration and creation when validating
      * @var ?int
      */
@@ -48,6 +42,8 @@ class AccessTokenService extends Component
      * @var string
      */
     public $tokenPattern = '/^Bearer\s+(.*?)$/';
+
+    public Configuration $configuration;
 
     /**
      * @throws InvalidConfigException
@@ -66,18 +62,15 @@ class AccessTokenService extends Component
             throw new InvalidConfigException('TokenHeader and TokenPattern must be set.');
         }
 
-        $this->publicKey = $this->publicKey ?? Module::getInstance()->publicKey;
-        $this->tokenValidationLeeway = $this->tokenValidationLeeway ?? Module::getInstance()->tokenValidationLeeway;
+        $this->configuration = $this->configuration ?? Module::getInstance()->configuration;
 
-        if (!isset($this->publicKey) || !$this->publicKey instanceof CryptKey) {
-            throw new InvalidConfigException('PublicKey must be set and be instance of ' . CryptKey::class);
-        }
+        $this->tokenValidationLeeway = $this->tokenValidationLeeway ?? Module::getInstance()->tokenValidationLeeway;
 
         parent::init();
     }
 
     /**
-     * @param Request $request
+     * @param  Request  $request
      * @return string|null
      */
     public function getJwtFromRequest(Request $request): ?string
@@ -116,38 +109,35 @@ class AccessTokenService extends Component
     /**
      * @param $jwt
      * @return Token
-     * @throws InvalidConfigException
      * @throws UnauthorizedHttpException
      */
     public function getAndValidateToken($jwt): Token
     {
         try {
-            $token = (new Parser(new JoseEncoder()))->parse($jwt);
+            $token = $this->configuration->parser()->parse($jwt);
 
-            try {
-                if ($token->verify(new Sha256(), $this->publicKey->getKeyPath()) === false) {
-                    throw new UnauthorizedHttpException('Access token could not be verified');
-                }
-            } catch (\BadMethodCallException $exception) {
+            $validator = new Validator();
+
+            if (!$validator->validate($token,
+                new SignedWith($this->configuration->signer(), $this->configuration->verificationKey()))) {
                 throw new UnauthorizedHttpException('Access token is not signed');
             }
 
-            // Ensure access token hasn't expired, taking some leeway into account
-            $data = new ValidationData(time(), $this->tokenValidationLeeway);
-
-            if ($token->validate($data) === false) {
+            $leeway = $this->tokenValidationLeeway ? \DateInterval::createFromDateString($this->tokenValidationLeeway.' seconds') : null;
+            if (!$validator->validate($token,
+                new StrictValidAt(SystemClock::fromUTC(), $leeway))) {
                 throw new UnauthorizedHttpException('Access token is invalid');
             }
 
             // Check if token has been revoked
-            if ($this->accessTokenRepository->isAccessTokenRevoked($token->getClaim('jti'))) {
+            if ($this->accessTokenRepository->isAccessTokenRevoked($token->claims()->get('jti'))) {
                 throw new UnauthorizedHttpException('Access token has been revoked');
             }
 
             return $token;
-        } catch (\InvalidArgumentException $exception) {
+        } catch (\Throwable $t) {
             // JWT couldn't be parsed so return the request as is
-            throw new UnauthorizedHttpException($exception->getMessage());
+            throw new UnauthorizedHttpException($t->getMessage());
         }
     }
 }

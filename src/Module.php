@@ -3,6 +3,9 @@
 namespace WolfpackIT\oauth;
 
 use DateInterval;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Signer\Rsa\Sha256;
 use League\OAuth2\Server\CryptKey;
 use WolfpackIT\oauth\components\AuthorizationServer;
 use WolfpackIT\oauth\components\repository\AccessTokenRepository;
@@ -148,6 +151,11 @@ class Module extends YiiModule
     public $authorizationServerComponent = 'authorizationServer';
 
     /**
+     * @var Configuration
+     */
+    public $configuration;
+
+    /**
      * @var string|array|AuthorizationServer
      */
     public $authorizationServer;
@@ -271,7 +279,13 @@ class Module extends YiiModule
                         : \Yii::createObject($this->publicKey);
             }
         }
-        
+
+
+        $this->configuration = Configuration::forAsymmetricSigner(
+            new Sha256(),
+            InMemory::file($this->privateKey->getKeyPath(), $this->privateKey->getPassPhrase() ?? ''),
+            InMemory::file($this->publicKey->getKeyPath())
+        );
         $this->initAuthorizationServer();
 
         parent::init();
